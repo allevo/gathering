@@ -133,7 +133,7 @@ describe('statister', function() {
 		});
 	});
 
-	xdescribe('performance', function() {
+	describe('performance', function() {
 		before(function() {
 			this.statister = new Statister({
 				percentiles: [0.9, 0.6],
@@ -163,7 +163,7 @@ describe('statister', function() {
 				var diffTime = process.hrtime(startTime);
 
 				assert.equal(0, diffTime[0]);
-				assert.equal(true, diffTime[1] < 9000000);
+				assert.equal(true, diffTime[1] < 10000000);
 
 				done();
 			});
