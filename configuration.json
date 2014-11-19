@@ -1,0 +1,6 @@
+{
+	"port": 8898,
+	"host": "127.0.0.1",
+	"onlyOne": true,
+	"flushInterval": 1000
+}
