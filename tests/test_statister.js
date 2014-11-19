@@ -140,49 +140,7 @@ describe('statister', function() {
 				metrics: ['mean', 'count', 'median', 'max', 'min']
 			});
 		});
-
-		it('200', function(done) {
-			var elements = getRandom(200);
-
-			var startTime = process.hrtime();
-			this.statister.getAll(elements, function() {
-				var diffTime = process.hrtime(startTime);
-
-				assert.equal(0, diffTime[0]);
-				assert.equal(true, diffTime[1] < 2300000);
-
-				done();
-			});
-		});
-
-		it('2000', function(done) {
-			var elements = getRandom(2000);
-
-			var startTime = process.hrtime();
-			this.statister.getAll(elements, function() {
-				var diffTime = process.hrtime(startTime);
-
-				assert.equal(0, diffTime[0]);
-				assert.equal(true, diffTime[1] < 16000000);
-
-				done();
-			});
-		});
-
-		it('20000', function(done) {
-			var elements = getRandom(20000);
-
-			var startTime = process.hrtime();
-			this.statister.getAll(elements, function() {
-				var diffTime = process.hrtime(startTime);
-
-				assert.equal(0, diffTime[0]);
-				assert.equal(true, diffTime[1] < 30000000);
-
-				done();
-			});
-		});
-
+		
 		it('200000', function(done) {
 			var elements = getRandom(200000);
 

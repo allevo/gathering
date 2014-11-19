@@ -27,7 +27,7 @@ Main.prototype.start = function(cbk) {
 	cbk = cbk || function() {};
 
 	this.readConfig(this.configFilename, function(err, config) {
-		if (err) throw err;
+		if (err) { throw err; }
 
 		self.config = config;
 		self.config.percentiles = self.config.percentiles ? self.config.percentiles : [];
@@ -43,6 +43,14 @@ Main.prototype.start = function(cbk) {
 			self.scheduleFlush();
 			cbk();
 		});
+	});
+};
+
+Main.prototype.exit = function() {
+	console.log('Exiting...');
+	clearInterval(this.intervalId);
+	this.close(function() {
+		process.exit(0);
 	});
 };
 
@@ -103,8 +111,8 @@ Main.prototype.flush = function(toSend) {
 		if (err) throw err;
 
 		if (self.config.onlyOne) {
-			clearInterval(self.intervalId);
-			process.exit(0);
+			console.log('Exit due onlyOne config.set to true');
+			self.exit();
 		}
 	});
 };
@@ -143,5 +151,7 @@ module.exports = Main;
 
 if (module == require.main) {
 	var main = new Main(process.argv[2] || './configuration.json');
-	main.start();
+	main.start(function() {
+		console.log('The daemon is running...');
+	});
 }
