@@ -1,15 +1,16 @@
 {
   "name": "statistic-aggregator",
   "version": "0.1.0",
-  "description": "ERROR: No README.md file found!",
+  "description": "Statistics aggregator daemon",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --recursive tests"
+    "test": "./node_modules/.bin/jshint *.js backends/*.js tests/*.js && istanbul cover ./node_modules/.bin/_mocha -- --recursive -R tap tests"
   },
-  "repository": "",
-  "author": "",
+  "repository": "https://github.com/allevo/statistic-aggregator",
+  "author": "allevo",
   "license": "BSD",
   "devDependencies": {
-    "mocha": "~2.0.1"
+    "mocha": "~2.0.1",
+    "jshint": "*"
   }
 }

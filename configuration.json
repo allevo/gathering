@@ -2,5 +2,13 @@
 	"port": 8898,
 	"host": "127.0.0.1",
 	"onlyOne": true,
-	"flushInterval": 1000
+	"flushInterval": 1000,
+	"backends": {
+		"stdout": {
+			"path": "./backends/stdout",
+			"config": {
+				"date_format": "YYYY-mm-dd hh:mm:ss"
+			}
+		}
+	}
 }

@@ -8,163 +8,228 @@ var Statister = require('../statister');
 
 
 function _averange(arr) {
-	return arr.reduce(function(prev, current) { return prev + current; }, 0) / arr.length;
+  return arr.reduce(function(prev, current) { return prev + current; }, 0) / arr.length;
 }
 
 function getRandom(n) {
-	var buffer = crypto.randomBytes(n);
-	var elements = [];
-	for (var i=0; i < n; i++) {
-		elements.push({value: buffer[i]});
-	}
-	return elements;
+  var buffer = crypto.randomBytes(n);
+  var elements = [];
+  for (var i=0; i < n; i++) {
+    elements.push({value: buffer[i]});
+  }
+  return elements;
 }
 
 describe('statister', function() {
+  describe('getTimeStats', function() {
+    var elements = [
+      {value: 6},
+      {value: 6},
+      {value: 6},
+      {value: 6},
+      {value: 6.1},
+      {value: 6.2},
+      {value: 6.2},
+      {value: 6.3},
+      {value: 6.3},
+      {value: 8.3},
+      {value: 10},
+      {value: 12},
+      {value: 11},
+      {value: 9},
+      {value: 7},
+      {value: 5},
+    ];
 
-	describe('getAll', function() {
-		var elements = [
-			{value: 6},
-			{value: 6},
-			{value: 6},
-			{value: 6},
-			{value: 6.1},
-			{value: 6.2},
-			{value: 6.2},
-			{value: 6.3},
-			{value: 6.3},
-			{value: 8.3},
-			{value: 10},
-			{value: 12},
-			{value: 11},
-			{value: 9},
-			{value: 7},
-			{value: 5},
-		];
+    describe('90 percentile', function() {
+      before(function(done) {
+        var statister = new Statister({
+          percentiles: [0.9],
+          metrics: ['mean', 'count', 'median', 'max', 'min']
+        });
+        var test = this;
 
-		it('90', function(done) {
-			var statister = new Statister({
-				percentiles: [0.9],
-				metrics: ['mean', 'count', 'median', 'max', 'min']
-			});
-			statister.getAll(elements, function(err, stats) {
-				assert.equal(8, Object.keys(stats).length);
+        statister.getTimeStats(elements, function(err, stats) {
+          test.err = err;
+          test.stats = stats;
 
-				assert.equal(elements.length, stats.count);
-				assert.equal(7.3375, stats.mean);
-				assert.equal(6.25, stats.median);
-				assert.equal(12, stats.max);
-				assert.equal(5, stats.min);
+          done();
+        });
+      });
 
-				assert.equal(7.723076923076923, stats.mean_90);
-				assert.equal(11, stats.upper_90);
-				assert.equal(6, stats.lower_90);
+      it('error should be null', function() {
+        assert.ifError(this.err);
+      });
 
-				done();
-			});
-		});
+      describe('stats', function() {
+        it('should have 9 keys', function() {
+          assert.equal(9, Object.keys(this.stats).length);
+        });
+        it('should have length', function() {
+          assert.equal(elements.length, this.stats.count);
+        });
+        it('should have median', function() {
+          assert.equal(6.25, this.stats.median);
+        });
+        it('should have mean', function() {
+          assert.equal(7.3375, this.stats.mean);
+        });
+        it('should have max', function() {
+          assert.equal(12, this.stats.max);
+        });
+        it('should have min', function() {
+          assert.equal(5, this.stats.min);
+        });
 
-		it('60', function(done) {
-			var statister = new Statister({
-				percentiles: [0.6],
-				metrics: ['mean', 'count', 'median', 'max', 'min']
-			});
-			statister.getAll(elements, function(err, stats) {
-				assert.equal(8, Object.keys(stats).length);
+        describe('90 percentile', function() {
+          it('should have count', function() {
+            assert.equal(14, this.stats.count_90);
+          });
+          it('should have mean', function() {
+            assert.equal(7.171428571428572, this.stats.mean_90);
+          });
+          it('should have max', function() {
+            assert.equal(11, this.stats.max_90);
+          });
+          it('should have min', function() {
+            assert.equal(6, this.stats.min_90);
+          });
+        });
+      });
+    });
 
-				assert.equal(elements.length, stats.count);
-				assert.equal(7.3374999999999995, stats.mean);
-				assert.equal(6.25, stats.median);
-				assert.equal(12, stats.max);
-				assert.equal(5, stats.min);
+    describe('90 and 60', function() {
+      before(function(done) {
+        var statister = new Statister({
+          percentiles: [0.9 ,0.6],
+          metrics: ['mean', 'count', 'median', 'max', 'min']
+        });
+        var test = this;
 
-				assert.equal(8.333333333333334, stats.mean_60);
-				assert.equal(6.3, stats.upper_60);
-				assert.equal(6.2, stats.lower_60);
+        statister.getTimeStats(elements, function(err, stats) {
+          test.err = err;
+          test.stats = stats;
 
-				done();
-			});
-		});
+          done();
+        });
+      });
 
-		it('90 and 60', function(done) {
-			var statister = new Statister({
-				percentiles: [0.9 ,0.6],
-				metrics: ['mean', 'count', 'median', 'max', 'min']
-			});
-			statister.getAll(elements, function(err, stats) {
-				assert.equal(11, Object.keys(stats).length);
+      it('error should be null', function() {
+        assert.ifError(this.err);
+      });
 
-				assert.equal(elements.length, stats.count);
-				assert.equal(7.3374999999999995, stats.mean);
-				assert.equal(6.25, stats.median);
-				assert.equal(12, stats.max);
-				assert.equal(5, stats.min);
+      describe('90', function() {
+        it('should have count', function() {
+          assert.equal(14, this.stats.count_90);
+        });
+        it('should have mean', function() {
+          assert.equal(7.171428571428572, this.stats.mean_90);
+        });
+        it('should have max', function() {
+          assert.equal(11, this.stats.max_90);
+        });
+        it('should have min', function() {
+          assert.equal(6, this.stats.min_90);
+        });
+      });
 
-				assert.equal(7.723076923076923, stats.mean_90);
-				assert.equal(11, stats.upper_90);
-				assert.equal(6, stats.lower_90);
+      describe('60', function() {
+        it('should have count', function() {
+          assert.equal(4, this.stats.count_60);
+        });
+        it('should have mean', function() {
+          assert.equal(6.25, this.stats.mean_60);
+        });
+        it('should have max', function() {
+          assert.equal(6.3, this.stats.max_60);
+        });
+        it('should have min', function() {
+          assert.equal(6.2, this.stats.min_60);
+        });
+      });
+    });
 
-				assert.equal(8.333333333333334, stats.mean_60);
-				assert.equal(6.3, stats.upper_60);
-				assert.equal(6.2, stats.lower_60);
+    it('empty', function(done) {
+      var statister = new Statister({
+        percentiles: [0.9, 0.6],
+        metrics: ['mean', 'count', 'median', 'max', 'min']
+      });
+      statister.getTimeStats([], function(err, stats) {
+        assert.equal(null, stats);
 
-				done();
-			});
-		});
+        done();
+      });
+    });
+  });
 
-		it('empty', function(done) {
-			var expected = {
-				count: 0,
-				min: undefined,
-				max: undefined,
-				mean: undefined,
-				median: undefined
-			};
+  describe('getCountStats', function() {
+    var elements = [
+      {value: 1},
+      {value: 2},
+      {value: 7},
+      {value: 1},
+      {value: 5},
+    ];
 
-			var statister = new Statister({
-				percentiles: [0.9, 0.6],
-				metrics: ['mean', 'count', 'median', 'max', 'min']
-			});
-			statister.getAll([], function(err, stats) {
-				assert.deepEqual(expected, stats);
+    describe('not empty', function() {
+      before(function(done) {
+        var test = this;
 
-				done();
-			});
-		});
-	});
+        var statister = new Statister({});
+        statister.getCountStats(elements, function(err, stats) {
+          test.err = err;
+          test.stats = stats;
 
-	describe('performance', function() {
-		before(function() {
-			this.statister = new Statister({
-				percentiles: [0.9, 0.6],
-				metrics: ['mean', 'count', 'median', 'max', 'min']
-			});
-		});
-		
-		it('200000', function(done) {
-			var elements = getRandom(200000);
+          done();
+        });
+      });
 
-			var startTime = process.hrtime();
-			this.statister.getAll(elements, function() {
-				var diffTime = process.hrtime(startTime);
+      it('err should be null', function() {
+        assert.ifError(this.err);
+      });
 
-				assert.equal(0, diffTime[0]);
-				assert.equal(true, diffTime[1] < 300000000);
+      describe('stats', function() {
+        it('should have sum', function() {
+          assert.equal(16, this.stats.sum);
+        });
+        it('should have count', function() {
+          assert.equal(elements.length, this.stats.count);
+        });
+      });
+    });
 
-				done();
+    it('empty', function(done) {
+      var statister = new Statister({});
+      statister.getCountStats([], function(err, stats) {
+        assert.ifError(err);
+        assert.equal(null, stats);
 
-			});
-		});
+        done();
+      });
+    });
+  });
 
-		xit('echo', function() {
-			var elements = getRandom(20000);
+  describe('performance', function() {
+    before(function() {
+      this.statister = new Statister({
+        percentiles: [0.9, 0.6],
+        metrics: ['mean', 'count', 'median', 'max', 'min']
+      });
+    });
+    
+    it('200000', function(done) {
+      var elements = getRandom(200000);
 
-			var startTime = process.hrtime();
-			this.statister.getAll(elements, function(err, stats) {	
-				console.log(stats);
+      var startTime = process.hrtime();
+      this.statister.getTimeStats(elements, function() {
+        var diffTime = process.hrtime(startTime);
 
-				console.log(process.hrtime(startTime)[1]);
-			});
-		});
-	});
+        assert.equal(0, diffTime[0]);
+        assert.equal(true, diffTime[1] < 900000000);
+
+        done();
+
+      });
+    });
+  });
 });

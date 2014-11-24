@@ -7,24 +7,27 @@ var map = require('./async').map;
 var Receiver = require('./receiver');
 var Aggregator = require('./aggregator');
 var Statister = require('./statister');
-var Sender = require('./sender');
-
 
 
 function Main(configFilename) {
 	this.configFilename = configFilename;
+	this.cleanStats();
+
+	this.receiver = new Receiver();
+}
+
+Main.prototype.cleanStats = function() {
 	this.data = {
 		time: [],
 		count: [],
 		gauge: [],
 	};
-
-	this.receiver = new Receiver();
-}
+};
 
 Main.prototype.start = function(cbk) {
 	var self = this;
 	cbk = cbk || function() {};
+	self.backends = {};
 
 	this.readConfig(this.configFilename, function(err, config) {
 		if (err) { throw err; }
@@ -35,7 +38,12 @@ Main.prototype.start = function(cbk) {
 
 		self.statister = new Statister(self.config);
 		self.aggregator = new Aggregator();
-		self.sender = new Sender();
+
+		for(var backend in config.backends) {
+			var bConfig = config.backends[backend];
+			var Cls = require(bConfig.path);
+			self.backends[backend] = new Cls(backend, config);
+		}
 
 		self.receiver.on('message', self.onMessage.bind(self));
 
@@ -48,16 +56,16 @@ Main.prototype.start = function(cbk) {
 
 Main.prototype.exit = function() {
 	console.log('Exiting...');
-	clearInterval(this.intervalId);
-	this.close(function() {
-		process.exit(0);
-	});
+	this.close(process.exit.bind(null, 0));
 };
 
 Main.prototype.close = function(cbk) {
 	var self = this;
+	clearInterval(this.intervalId);
 	this.receiver.close(function() {
-		self.sender.close(cbk);
+		map(self.backends, function(backend, next) {
+			backend.close(next);
+		}, cbk);
 	});
 };
 
@@ -75,11 +83,7 @@ Main.prototype.scheduleFlush = function() {
 
 Main.prototype.aggregate = function() {
 	var copy = this.data;
-	this.data = {
-		time: [],
-		count: [],
-		gauge: [],
-	};
+	this.cleanStats();
 
 	var self = this;
 	this.aggregator.aggregate(copy, function(err, aggregated) {
@@ -95,20 +99,28 @@ Main.prototype.aggregate = function() {
 
 Main.prototype.makeStatistic = function(aggregated, cbk) {
 	var self = this;
-	map(
-		aggregated,
-		function(type, next) {
-			map(type, self.statister.getAll.bind(self.statister), next);
-		},
-		cbk
-	);
+
+	aggregated.count = aggregated.count || {};
+	aggregated.time = aggregated.time || {};
+
+	map({
+		count: map.bind(map, aggregated.count, this.statister.getCountStats.bind(this.statister)),
+		time: map.bind(map, aggregated.time, this.statister.getTimeStats.bind(this.statister)),
+	}, function(item, next) {
+		item(next);
+	}, cbk);
 };
 
 Main.prototype.flush = function(toSend) {
 	var self = this;
+	var flushTime = new Date();
 
-	this.sender.send(toSend, function(err) {
-		if (err) throw err;
+	map(this.backends, function(backend, next) {
+		backend.send(toSend, flushTime, next);
+	}, function(err) {
+		if (err) {
+			console.log(err);
+		}
 
 		if (self.config.onlyOne) {
 			console.log('Exit due onlyOne config.set to true');
@@ -127,11 +139,10 @@ Main.prototype.readConfig = function(filename, cbk) {
 var types = {
 	c: 'count',
 	ms: 'time',
-	g: 'gauge',
 };
 
 // metric name and value cannot contain | character
-var regexpMessage = /^([^:]+):(\d+)\|(\w)(?:@(\d?\.\d+))?$/;
+var regexpMessage = /^([^:]+):(\d+)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
 Main.prototype.parseMessage = function(message, callback) {
 	var matches = message.match(regexpMessage);
 	if (!matches) {

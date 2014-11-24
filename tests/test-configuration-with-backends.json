@@ -1,0 +1,19 @@
+{
+	"port": 8898,
+	"host": "127.0.0.1",
+	"flushInterval": 100,
+	"backends": {
+		"stdout1": {
+			"path": "./backends/stdout",
+			"date_function": "toLocaleDateString"
+		},
+		"stdout2": {
+			"path": "./backends/stdout",
+			"date_function": "toLocaleDateString"
+		},
+		"stdout3": {
+			"path": "./backends/stdout",
+			"date_function": "toLocaleDateString"
+		}
+	}
+}

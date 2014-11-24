@@ -1,12 +1,13 @@
 'use strict';
 
 
-function Sender() {
-
+function Sender(name, config) {
+	this.name = name;
+	this.config = config;
 }
 
-Sender.prototype.send = function(data, callback) {
-	return callback(null);
+Sender.prototype.send = function(data, flushTime, callback) {
+	return callback();
 };
 
 Sender.prototype.close = function(cbk) {
