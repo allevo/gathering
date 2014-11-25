@@ -208,28 +208,4 @@ describe('statister', function() {
       });
     });
   });
-
-  describe('performance', function() {
-    before(function() {
-      this.statister = new Statister({
-        percentiles: [0.9, 0.6],
-        metrics: ['mean', 'count', 'median', 'max', 'min']
-      });
-    });
-    
-    it('200000', function(done) {
-      var elements = getRandom(200000);
-
-      var startTime = process.hrtime();
-      this.statister.getTimeStats(elements, function() {
-        var diffTime = process.hrtime(startTime);
-
-        assert.equal(0, diffTime[0]);
-        assert.equal(true, diffTime[1] < 900000000);
-
-        done();
-
-      });
-    });
-  });
 });
