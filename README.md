@@ -1,6 +1,6 @@
 # README
 
-[![Build Status](https://travis-ci.org/allevo/statistic-aggregator.svg)](https://travis-ci.org/allevo/statistic-aggregator)
+[![Build Status](https://travis-ci.org/allevo/gathering.svg?branch=0.1)](https://travis-ci.org/allevo/gathering)
 
 This is a daemon written in nodejs. It accepts UPD package, stores temporary the data, creates statistics and sends them to some backends.
 
