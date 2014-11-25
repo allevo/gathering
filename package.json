@@ -1,6 +1,6 @@
 {
   "name": "gathering-daemon",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Statistics aggregator daemon",
   "main": "index.js",
   "scripts": {
