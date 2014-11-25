@@ -4,13 +4,14 @@
   "description": "Statistics aggregator daemon",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/jshint *.js backends/*.js tests/*.js && istanbul cover ./node_modules/.bin/_mocha -- --recursive -R tap tests"
+    "test": "./node_modules/.bin/jshint *.js backends/*.js tests/*.js && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --recursive -R tap tests"
   },
   "repository": "https://github.com/allevo/gathering-daemon.git",
   "author": "allevo",
   "license": "BSD",
   "devDependencies": {
     "mocha": "~2.0.1",
-    "jshint": "*"
+    "jshint": "*",
+    "istanbul": "*"
   }
 }
