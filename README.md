@@ -90,5 +90,5 @@ It's important you implement this menthod as async as possible to perform better
 ## Why don't use statsd
 Before starting this project, I have tried to use StatsD project but finding a lot of problems. StatsD is a great project but is born to send the stats to Graphite. Other backends like ElasticSeach have some problems with naming or UTF8 support. The StatsD code is very ugly and complicated. I'm trying to rewrite it and this project born. The first idea is "The simple is better". So using simple patterns and simple tests I hope I write this project clearly.
 
-## Whould you mind to contribute?
+## Would you mind to contribute?
 All contributors are accepted. Each ideas are accepted and discussed in the correct way. All pull request are welcome.
