@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/allevo/gathering.svg?branch=0.1)](https://travis-ci.org/allevo/gathering)
 [![NPM](https://nodei.co/npm/gathering-daemon.png)](https://nodei.co/npm/gathering-daemon/)
+
+
 This is a daemon written in nodejs. It accepts UPD package, stores temporary the data, creates statistics and sends them to some backends.
 
 ## How to send a metric
