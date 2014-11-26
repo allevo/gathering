@@ -46,7 +46,7 @@ For each precentile described in you configuration (see Configuration section be
  * *min* is the maxium value in the percentile
  * *mean* is the mean value in the percentile
 
-**Warning: please don't ask a lot of percetiles. This might have a performace impact**
+**Warning: please don't ask a lot of percentiles. This might have a performace impact**
 
 ## Configuration
 Your configuration describes which backends will be load. For each backend, it's possible to specify a different configuration avoiding name collisions.
@@ -99,7 +99,7 @@ It's important you implement this menthod as async as possible to perform better
  * Add gauge
  * Choose which stats is calculated
  * Implement Graphite backend
- * Implement ElasticSeach backend
+ * ~~Implement ElasticSeach backend~~
  * Add debug flag
 
 ## Why don't use statsd
