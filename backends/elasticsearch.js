@@ -23,15 +23,23 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
   var self = this;
 
   async.parallel([
-    async.map.bind(null, data.count, function(item, next) { countCommands.push(item); next(); }),
-    async.map.bind(null, data.time, function(item, next) { timeCommands.push(item); next(); }),
+    async.map.bind(null, data.count, function(item, next) {
+      item.flushTime = flushTime;
+      countCommands.push(item);
+      next();
+    }),
+    async.map.bind(null, data.time, function(item, next) {
+      item.flushTime = flushTime;
+      timeCommands.push(item);
+      next();
+    }),
   ], function(err) {
     if (err) { return callback(err); }
-
-
+    
+    // Use Object.create to copy the options
     async.parallel([
-      self.client.bulk.bind(self.client, countCommands, self.config.backends[self.name].countOptions),
-      self.client.bulk.bind(self.client, timeCommands, self.config.backends[self.name].timeOptions),
+      self.client.bulk.bind(self.client, countCommands, Object.create(self.config.backends[self.name].countOptions)),
+      self.client.bulk.bind(self.client, timeCommands, Object.create(self.config.backends[self.name].timeOptions)),
     ], callback);
   });
 };
