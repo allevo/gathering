@@ -57,7 +57,6 @@ function mapArray(arr, iter, callback) {
 	});
 }
 
-
 function map(obj, iter, callback) {
 	if (Array.isArray(obj)) {
 		mapArray(obj, iter, callback);
@@ -66,4 +65,14 @@ function map(obj, iter, callback) {
 	}
 }
 
+function parallel(obj, callback) {
+  var tasks = {};
+  for(var i in obj) {
+    tasks[i] = obj[i];
+  }
+  map(tasks, function(item, next) { item(next); }, callback);
+}
+
+
 module.exports.map = map;
+module.exports.parallel = parallel;

@@ -52,4 +52,35 @@ describe('async', function() {
       });
     });
   });
+  
+  describe('parallel', function() {
+    var func1Called = false;
+    var func2Called = false;
+
+    function func1(next) {
+      func1Called = true;
+      setTimeout(next, 1);
+    }
+    function func2(next) {
+      func2Called = true;
+      setTimeout(next, 100);
+    }
+
+    describe('array', function() {
+      before(function(done) {
+        async.parallel([func1, func2], done);
+      });
+      after(function() {
+        func1Called = false;
+        func2Called = false;
+      });
+
+      it('func1 should be called', function() {
+        assert.equal(true, func1Called);
+      });
+      it('func2 should be called', function() {
+        assert.equal(true, func2Called);
+      });
+    });
+  });
 });
