@@ -172,6 +172,23 @@ describe('server', function() {
         assert.equal(1, this.n);
       });
     });
+
+    describe('support UTF-8', function() {
+      before(function(done) {
+        var test = this;
+
+        this.main.addMessage = function(message) {
+          test.message = message;
+          done();
+        };
+
+        send('☃🎅\t἖℃:3|c');
+      });
+
+      it('should works with ☃🎅\t἖℃', function() {
+        assert.equal('☃🎅\t἖℃', this.message.name);
+      });
+    });
   });
 
   describe('addMessage', function() {
