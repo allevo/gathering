@@ -208,4 +208,42 @@ describe('statister', function() {
       });
     });
   });
+
+  describe('getOSStats', function() {
+    before(function(done) {
+      var test = this;
+
+      var statister = new Statister({
+          osStats: 'all',
+      });
+      statister.getOSStats(function(err, stats) {
+        test.err = err;
+        test.stats = stats;
+
+        done();
+      });
+    });
+
+    it('err should be null', function() {
+      assert.ifError(this.err);
+    });
+    it('hostname should be set', function() {
+      assert.ok(this.stats.hostname);
+    });
+    it('uptime should be set', function() {
+      assert.ok(this.stats.uptime);
+    });
+    it('freemem should be set', function() {
+      assert.ok(this.stats.freemem);
+    });
+    it('totalmem should be set', function() {
+      assert.ok(this.stats.totalmem);
+    });
+    it('loadavg should be set', function() {
+      assert.ok(this.stats.loadavg);
+    });
+    it('cpus should be set', function() {
+      assert.ok(this.stats.cpus);
+    });
+  });
 });

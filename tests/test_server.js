@@ -257,6 +257,11 @@ describe('server', function() {
             assert.equal(true, 'pluto' in this.toSend.time);
           });
         });
+        describe('os', function() {
+          it('should be ok', function() {
+            assert.ok(this.toSend.os);
+          });
+        });
       });
     });
 
@@ -291,6 +296,11 @@ describe('server', function() {
         });
         it('should have time', function() {
           assert.equal(true, 'time' in this.toSend);
+        });
+        describe('os', function() {
+          it('should be ok', function() {
+            assert.ok(this.toSend.os);
+          });
         });
       });
     });

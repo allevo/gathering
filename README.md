@@ -60,6 +60,9 @@ But... if you are using this, you should send the statistics to somewhere. So le
 ### Percentile configuration
 Valueting the 'percentiles' key of your configuration, the daemon will calculate the correct *min*, *max* and *mean* for each percentiles you specify.
 
+### OS Stats
+Gathering is able to track os statistics. Using `osStats` key in your configuration, this daemon calculates all stats and send them to each backend under `os` key. The `osStats` key is valued to `"all"` or an array contains all statistics you need. There's posibile to fine all elements in `statister.js` file.
+
 ## How it works
 If you are looking for a way to create new backend, this is the correct section.
 

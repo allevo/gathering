@@ -106,6 +106,7 @@ Main.prototype.makeStatistic = function(aggregated, cbk) {
   map({
     count: map.bind(null, aggregated.count, this.statister.getCountStats.bind(this.statister)),
     time: map.bind(null, aggregated.time, this.statister.getTimeStats.bind(this.statister)),
+    os: this.statister.getOSStats.bind(this.statister),
   }, function(item, next) {
     item(next);
   }, cbk);

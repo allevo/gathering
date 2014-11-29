@@ -1,9 +1,19 @@
 'use strict';
 
+var os = require('os');
+
 var map = require('./async').map;
 
 function Statister(config) {
   this.config = config;
+  var osStats = this.config.osStats || [];
+  if (osStats === 'all') {
+    osStats = ['hostname', 'uptime', 'freemem', 'totalmem', 'loadavg', 'cpus'];
+  }
+  this.config.osStats = osStats.reduce(function(o, v, i) {
+    o[v] = v;
+    return o;
+  }, {});
 }
 
 Statister.prototype.getCountStats = function(data, callback) {
@@ -14,6 +24,17 @@ Statister.prototype.getCountStats = function(data, callback) {
   return callback(null, {
     count: data.length,
     sum: data.reduce(function(s, item) { return s + item.value; }, 0),
+  });
+};
+
+Statister.prototype.getOSStats = function(callback) {
+  map(this.config.osStats, function(item, next) {
+    if (item in os) {
+      return next(null, os[item]());
+    }
+    next(new Error(item + 'isn\'t a property of os package'));
+  }, function(err, ret) {
+    callback(err, ret);
   });
 };
 

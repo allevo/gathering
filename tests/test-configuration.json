@@ -1,5 +1,6 @@
 {
 	"port": 8898,
 	"host": "127.0.0.1",
-	"flushInterval": 100
+	"flushInterval": 100,
+	"osStats": "all"
 }
