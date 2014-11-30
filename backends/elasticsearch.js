@@ -17,30 +17,62 @@ function ElasticSearch(name, config) {
 util.inherits(ElasticSearch, Sender);
 
 ElasticSearch.prototype.send = function(data, flushTime, callback) {
+  var self = this;
+
   var countCommands = [];
   var timeCommands = [];
 
-  var self = this;
+  var hasCount = self.config.backends[self.name].countOptions &&  data.count && Object.keys(data.count).length !== 0;
+  var hasTime = self.config.backends[self.name].timeOptions && data.time && Object.keys(data.time).length !== 0;
+  var hasOs = self.config.backends[self.name].osOptions && data.os && Object.keys(data.os).length !== 0;
 
-  async.parallel([
-    async.map.bind(null, data.count, function(item, next) {
+  var tasks = {};
+  if (hasCount) {
+    tasks.count = async.map.bind(null, data.count, function(item, next) {
       item.flushTime = flushTime;
-      countCommands.push(item);
-      next();
-    }),
-    async.map.bind(null, data.time, function(item, next) {
+      next(null, item);
+    });
+  }
+  if (hasTime) {
+    tasks.time = async.map.bind(null, data.time, function(item, next) {
       item.flushTime = flushTime;
-      timeCommands.push(item);
-      next();
-    }),
-  ], function(err) {
+      next(null, item);
+    });
+  }
+
+  async.map(tasks, function(item, next) {
+    item(next);
+  }, function(err, res) {
     if (err) { return callback(err); }
+
+    var s, k;
+
+    var innerTasks = [];
+    if (hasTime) {
+      s = [];
+      for (k in res.time) {
+        res.time[k].key = k;
+        s.push(res.time[k]);
+      }
+      // Use Object.create to copy the options
+      innerTasks.push(self.client.bulk.bind(self.client, s, Object.create(self.config.backends[self.name].timeOptions)));
+    }
+    if (hasCount) {
+      s = [];
+      for (k in res.count) {
+        res.count[k].key = k;
+        s.push(res.count[k]);
+      }
+      // Use Object.create to copy the options
+      innerTasks.push(self.client.bulk.bind(self.client, s, Object.create(self.config.backends[self.name].countOptions)));
+    }
+    if (hasOs) {
+      data.os.flushTime = flushTime;
+      // Use Object.create to copy the options
+      innerTasks.push(self.client.bulk.bind(self.client, [data.os], Object.create(self.config.backends[self.name].osOptions)));
+    }
     
-    // Use Object.create to copy the options
-    async.parallel([
-      self.client.bulk.bind(self.client, countCommands, Object.create(self.config.backends[self.name].countOptions)),
-      self.client.bulk.bind(self.client, timeCommands, Object.create(self.config.backends[self.name].timeOptions)),
-    ], callback);
+    async.parallel(innerTasks, callback);
   });
 };
 

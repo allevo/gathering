@@ -2,6 +2,7 @@
 'use strict';
 
 var crypto = require('crypto');
+var os = require('os');
 var assert = require('assert');
 
 var Statister = require('../statister');
@@ -213,6 +214,30 @@ describe('statister', function() {
     before(function(done) {
       var test = this;
 
+      os.cpus = function() {
+        return [ {
+          model: 'Intel(R) Core(TM) i7 CPU         860  @ 2.80GHz',
+          speed: 2926,
+          times: {
+            user: 252020,
+            nice: 0,
+            sys: 30340,
+            idle: 1070356870,
+            irq: 0
+          }
+        }, {
+          model: 'Intel(R) Core(TM) i7 CPU         860  @ 2.80GHz',
+          speed: 2926,
+          times: {
+            user: 306960,
+            nice: 0,
+            sys: 26980,
+            idle: 1071569080,
+            irq: 0
+          }
+        }];
+      };
+
       var statister = new Statister({
           osStats: 'all',
       });
@@ -229,21 +254,52 @@ describe('statister', function() {
     });
     it('hostname should be set', function() {
       assert.ok(this.stats.hostname);
+      assert.equal('string', typeof this.stats.hostname);
     });
     it('uptime should be set', function() {
       assert.ok(this.stats.uptime);
+      assert.equal('number', typeof this.stats.uptime);
     });
     it('freemem should be set', function() {
       assert.ok(this.stats.freemem);
+      assert.equal('number', typeof this.stats.freemem);
     });
     it('totalmem should be set', function() {
       assert.ok(this.stats.totalmem);
+      assert.equal('number', typeof this.stats.totalmem);
     });
-    it('loadavg should be set', function() {
-      assert.ok(this.stats.loadavg);
+    it('loadavg_1 should be set', function() {
+      assert.ok(this.stats.loadavg_1);
+      assert.equal('number', typeof this.stats.loadavg_1);
     });
-    it('cpus should be set', function() {
-      assert.ok(this.stats.cpus);
+    it('loadavg_5 should be set', function() {
+      assert.ok(this.stats.loadavg_5);
+      assert.equal('number', typeof this.stats.loadavg_5);
+    });
+    it('loadavg_15 should be set', function() {
+      assert.ok(this.stats.loadavg_15);
+      assert.equal('number', typeof this.stats.loadavg_15);
+    });
+    describe('cpus', function() {
+      for(var i = 0; i < 2; i++) {
+        /*jshint -W083 */
+        var k = i;
+        it(k + ' has user', function() {
+          assert.equal('number', typeof this.stats['cpus' + k].user);
+        });
+        it(k + ' has sys', function() {
+          assert.equal('number', typeof this.stats['cpus' + k].sys);
+        });
+        it(k + ' has idle', function() {
+          assert.equal('number', typeof this.stats['cpus' + k].idle);
+        });
+        it(k + ' has irq', function() {
+          assert.equal('number', typeof this.stats['cpus' + k].irq);
+        });
+        it(k + ' has nice', function() {
+          assert.equal('number', typeof this.stats['cpus' + k].nice);
+        });
+      }
     });
   });
 });

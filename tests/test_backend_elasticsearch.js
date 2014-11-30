@@ -22,20 +22,26 @@ describe('elasticsearch backends', function() {
         countOptions: {
           _index: 'stats',
           _type: 'count'
+        },
+        osOptions
+        : {
+          _index: 'stats',
+          _type: 'os'
         }
       }
     }
   });
-  describe('one', function() {
-
+  describe('few', function() {
     before(function(done) {
       var test = this;
       var flushTime = new Date();
 
       this.scope = nock('http://localhost:9200')
-        .post('/stats/count/_bulk', {sum: 2, count: 1, flushTime: flushTime.toISOString()})
+        .post('/stats/count/_bulk', {key: 'foo', sum: 2, count: 1, flushTime: flushTime.toISOString()})
         .reply(200, {})
-        .post('/stats/time/_bulk', {max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString()})
+        .post('/stats/time/_bulk', {key: 'bar', max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString()})
+        .reply(200, {})
+        .post('/stats/os/_bulk', {uptime: 1234, loadavg_1: 1, loadavg_5: 15, loadavg_15: 2, flushTime: flushTime.toISOString()})
         .reply(200, {});
 
 
@@ -52,6 +58,12 @@ describe('elasticsearch backends', function() {
             min: 1,
             mean: 1.5,
           }
+        },
+        os: {
+          uptime: 1234,
+          loadavg_1: 1,
+          loadavg_5: 15,
+          loadavg_15: 2,
         }
       };
       backend.send(data, flushTime, done);
@@ -68,16 +80,15 @@ describe('elasticsearch backends', function() {
       var flushTime = new Date();
 
       var countExpectedBody = [
-        JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString()}),
-        JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString()}),
-        JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString()}),
+        JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString(), key: 'foo'}),
+        JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString(), key: 'bar'}),
+        JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString(), key: 'foobar'}),
       ].join('\n');
       var timeExpectedBody = [
-        JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString()}),
-        JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString()}),
-        JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString()}),
+        JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'bar'}),
+        JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'foo'}),
+        JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'foobar'}),
       ].join('\n');
-
 
       this.scope = nock('http://localhost:9200')
         .post('/stats/count/_bulk', countExpectedBody)

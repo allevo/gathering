@@ -34,6 +34,26 @@ Statister.prototype.getOSStats = function(callback) {
     }
     next(new Error(item + 'isn\'t a property of os package'));
   }, function(err, ret) {
+    if (ret.loadavg) {
+      ret.loadavg_1 = ret.loadavg[0];
+      ret.loadavg_5 = ret.loadavg[1];
+      ret.loadavg_15 = ret.loadavg[2];
+      delete ret.loadavg;
+    }
+    if (ret.cpus) {
+      for(var k =0; k < ret.cpus.length; k++) {
+        ret['cpus' + k] = {
+          user: ret.cpus[k].times.user,
+          nice: ret.cpus[k].times.nice,
+          sys: ret.cpus[k].times.sys,
+          idle: ret.cpus[k].times.idle,
+          irq: ret.cpus[k].times.irq,
+        };
+
+      }
+      delete ret.cpus;
+    }
+
     callback(err, ret);
   });
 };

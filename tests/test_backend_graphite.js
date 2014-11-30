@@ -39,6 +39,12 @@ describe('graphite backends', function() {
             min: 1,
             mean: 1.5,
           }
+        },
+        os: {
+          uptime: 111,
+          loadavg_1: 1,
+          loadavg_5: 2,
+          loadavg_15: 1,
         }
       };
       var test = this;
@@ -53,8 +59,8 @@ describe('graphite backends', function() {
       before(function() {
         this.splitted = this.data.split('\n');
       });
-      it('has 7 elements', function() {
-        assert.equal(5, this.splitted.length);
+      it('has 9 elements', function() {
+        assert.equal(9, this.splitted.length);
       });
       it('has all elements that starts with basePath', function() {
         for(var i in this.splitted) {
@@ -75,6 +81,18 @@ describe('graphite backends', function() {
       });
       it('fifth elements', function() {
         assert.equal(0, this.splitted[4].indexOf('foo.bar.count.count 1 '));
+      });
+      it('sixth elements', function() {
+        assert.equal(0, this.splitted[5].indexOf('foo.bar.os.uptime 111 '));
+      });
+      it('seventh elements', function() {
+        assert.equal(0, this.splitted[6].indexOf('foo.bar.os.loadavg_1 1 '));
+      });
+      it('eighth elements', function() {
+        assert.equal(0, this.splitted[7].indexOf('foo.bar.os.loadavg_5 2 '));
+      });
+      it('nineth elements', function() {
+        assert.equal(0, this.splitted[8].indexOf('foo.bar.os.loadavg_15 1 '));
       });
     });
   });
