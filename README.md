@@ -1,6 +1,6 @@
 # README
 
-[![Build Status](https://travis-ci.org/allevo/gathering.svg?branch=0.1)](https://travis-ci.org/allevo/gathering)
+[![Build Status](https://travis-ci.org/allevo/gathering.svg?branch=master)](https://travis-ci.org/allevo/gathering)
 [![NPM](https://nodei.co/npm/gathering-daemon.png)](https://nodei.co/npm/gathering-daemon/)
 
 
@@ -101,7 +101,7 @@ It's important you implement this menthod as async as possible to perform better
  * Aggregator is changable from configuration.
  * Add gauge
  * Choose which stats is calculated
- * Implement Graphite backend
+ * ~~Implement Graphite backend~~
  * ~~Add os stats~~
  * ~~Implement ElasticSeach backend~~
  * Add debug flag
