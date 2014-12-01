@@ -3,7 +3,7 @@
 
 var assert = require('assert');
 var util = require('util');
-var Socket = require('net').Socket;
+var net = require('net');
 
 var Graphite = require('../backends/graphite');
 
@@ -13,8 +13,8 @@ describe('graphite backends', function() {
     backends: {
       graphite: {
         server: {
-          host: 'carbon.hostedgraphite.com',
-          port: 2003
+          host: 'graphitehost.com',
+          port: 666
         },
         basePath: 'foo.bar'
       }
@@ -22,7 +22,6 @@ describe('graphite backends', function() {
   });
   describe('one', function() {
     before(function(done) {
-      this.timeout(30000);
 
       var flushTime = new Date();
 
@@ -48,11 +47,29 @@ describe('graphite backends', function() {
         }
       };
       var test = this;
-      Socket.prototype.end = function(data, cbk) {
-        test.data = data;
-        this.destroy();
+
+      net.Socket = function() {
+        this.connect = function(port, host, cbk) {
+          test.port = port;
+          test.host = host;
+          setTimeout(cbk, 10);
+        };
+        this.end = function(data) {
+          test.data = data;
+          this.emit('close', false);
+          return true;
+        };
       };
+      util.inherits(net.Socket, require('events').EventEmitter);
+
       backend.send(data, flushTime, done);
+    });
+
+    it('port should be correct', function() {
+      assert.equal(666, this.port);
+    });
+    it('host should be correct', function() {
+      assert.equal('graphitehost.com', this.host);
     });
 
     describe('data', function() {

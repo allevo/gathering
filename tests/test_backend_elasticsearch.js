@@ -23,27 +23,56 @@ describe('elasticsearch backends', function() {
           _index: 'stats',
           _type: 'count'
         },
-        osOptions
-        : {
+        osOptions: {
           _index: 'stats',
           _type: 'os'
         }
       }
     }
   });
+
+  describe('bulk', function() {
+    before(function(done) {
+      var test = this;
+
+      this.scope = nock('http://localhost:9200')
+        .post('/foo/bar/_bulk', '{"create":{}}\n{"pippo":1,"pluto":2}\n')
+        .reply(200, {errors: false, status: 201});
+
+      var data = [{pippo: 1, pluto: 2}];
+      backend.bulk('foo', 'bar', data, function(err, body) {
+        test.err = err;
+        test.body = body;
+
+        done();
+      });
+    });
+
+    it('api should be called', function() {
+      this.scope.done();
+    });
+
+    it('err should be null', function() {
+      assert.equal(null, this.err);
+    });
+  });
+
   describe('few', function() {
     before(function(done) {
       var test = this;
       var flushTime = new Date();
 
+      var countBody = '{"create":{}}\n{"sum":2,"count":1,"flushTime":"' + flushTime.toISOString() + '","key":"foo"}\n';
+      var timeBody = '{"create":{}}\n{"max":1,"min":1,"mean":1.5,"flushTime":"' + flushTime.toISOString() + '","key":"bar"}\n';
+      var osBody = '{"create":{}}\n{"uptime":1234,"loadavg_1":1,"loadavg_5":15,"loadavg_15":2,"flushTime":"' + flushTime.toISOString() + '"}\n';
+      
       this.scope = nock('http://localhost:9200')
-        .post('/stats/count/_bulk', {key: 'foo', sum: 2, count: 1, flushTime: flushTime.toISOString()})
+        .post('/stats/count/_bulk', countBody)
         .reply(200, {})
-        .post('/stats/time/_bulk', {key: 'bar', max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString()})
+        .post('/stats/time/_bulk', timeBody)
         .reply(200, {})
-        .post('/stats/os/_bulk', {uptime: 1234, loadavg_1: 1, loadavg_5: 15, loadavg_15: 2, flushTime: flushTime.toISOString()})
+        .post('/stats/os/_bulk', osBody)
         .reply(200, {});
-
 
       var data = {
         count: {
@@ -80,15 +109,21 @@ describe('elasticsearch backends', function() {
       var flushTime = new Date();
 
       var countExpectedBody = [
+        JSON.stringify({create:{}}),
         JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString(), key: 'foo'}),
+        JSON.stringify({create:{}}),
         JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString(), key: 'bar'}),
+        JSON.stringify({create:{}}),
         JSON.stringify({sum:2, count:1, flushTime: flushTime.toISOString(), key: 'foobar'}),
-      ].join('\n');
+      ].join('\n') + '\n';
       var timeExpectedBody = [
+        JSON.stringify({create:{}}),
         JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'bar'}),
+        JSON.stringify({create:{}}),
         JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'foo'}),
+        JSON.stringify({create:{}}),
         JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'foobar'}),
-      ].join('\n');
+      ].join('\n') + '\n';
 
       this.scope = nock('http://localhost:9200')
         .post('/stats/count/_bulk', countExpectedBody)

@@ -2,7 +2,7 @@
 
 
 var util = require('util');
-var ElasticSearchClient = require('elasticsearchclient');
+var http = require('http');
 
 var async = require('../async');
 var Sender = require('../sender');
@@ -10,11 +10,60 @@ var Sender = require('../sender');
 function ElasticSearch(name, config) {
   Sender.call(this, name, config);
 
-  this.client = new ElasticSearchClient(this.config.backends[this.name].server);
   this.config.backends[this.name].countOptions = this.config.backends[this.name].countOptions || {};
   this.config.backends[this.name].timeOptions = this.config.backends[this.name].timeOptions || {};
 }
 util.inherits(ElasticSearch, Sender);
+
+ElasticSearch.prototype.bulk = function(index, type, body, callback) {
+  if (!Array.isArray(body)) {
+    return callback(new Error('Body should be an array'));
+  }
+  var options = {
+    path: '/' + index + '/' + type + '/_bulk',
+    method: 'POST',
+    host: this.config.backends[this.name].server.host,
+    port: this.config.backends[this.name].server.port
+  };
+
+  var requestCallback = function(response) {
+    var retBody = '';
+    response.on('data', function (chunk) {
+      retBody += chunk;
+    });
+
+    response.on('end', function () {
+      var err = null;
+      var json;
+      if (response.statusCode !== 200) {
+        err = new Error('Wrong statusCode: ' + response.statusCode);
+      }
+      try {
+        json = JSON.parse(retBody);
+      } catch(e) {
+        err = new Error('Invalid json');
+      }
+      if (json.errors !== false) {
+        err = new Error('Errors found');
+      }
+      if (err) {
+        err.responseBody = retBody;
+        return callback(err);
+      }
+      callback(null, json);
+    });
+    response.on('error', callback);
+  };
+
+  var request = http.request(options, requestCallback);
+  request.on('error', callback);
+  for(var i in body) {
+    request.write('{"create":{}}\n');
+    request.write(JSON.stringify(body[i]));
+  }
+  request.write('\n');
+  request.end();
+};
 
 ElasticSearch.prototype.send = function(data, flushTime, callback) {
   var self = this;
@@ -45,7 +94,7 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
   }, function(err, res) {
     if (err) { return callback(err); }
 
-    var s, k;
+    var s, k, options;
 
     var innerTasks = [];
     if (hasTime) {
@@ -54,8 +103,8 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
         res.time[k].key = k;
         s.push(res.time[k]);
       }
-      // Use Object.create to copy the options
-      innerTasks.push(self.client.bulk.bind(self.client, s, Object.create(self.config.backends[self.name].timeOptions)));
+      options = self.config.backends[self.name].timeOptions;
+      innerTasks.push(self.bulk.bind(self, options._index, options._type, s));
     }
     if (hasCount) {
       s = [];
@@ -63,13 +112,13 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
         res.count[k].key = k;
         s.push(res.count[k]);
       }
-      // Use Object.create to copy the options
-      innerTasks.push(self.client.bulk.bind(self.client, s, Object.create(self.config.backends[self.name].countOptions)));
+      options = self.config.backends[self.name].countOptions;
+      innerTasks.push(self.bulk.bind(self, options._index, options._type, s));
     }
     if (hasOs) {
       data.os.flushTime = flushTime;
-      // Use Object.create to copy the options
-      innerTasks.push(self.client.bulk.bind(self.client, [data.os], Object.create(self.config.backends[self.name].osOptions)));
+      options = self.config.backends[self.name].osOptions;
+      innerTasks.push(self.bulk.bind(self, options._index, options._type, [data.os]));
     }
     
     async.parallel(innerTasks, callback);
