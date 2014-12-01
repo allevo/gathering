@@ -3,7 +3,6 @@
 var util = require('util');
 var net = require('net');
 
-var async = require('../async');
 var Sender = require('../sender');
 
 function Graphite(name, config) {
@@ -36,8 +35,8 @@ Graphite.prototype.send = function(data, flushTime, callback) {
 
   var client = new net.Socket();
   client.connect(this.port, this.host, client.end.bind(client, toSend.join('\n')));
-  client.on('close', function(has_error) {
-    callback(has_error === false ? undefined 
+  client.on('close', function(hasError) {
+    callback(hasError === false ? undefined 
       : new Error('Error on sending to graphite'));
   });
 };

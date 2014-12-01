@@ -1,4 +1,4 @@
-/* jshint mocha: true */
+/* jshint mocha: true, camelcase: false */
 'use strict';
 
 var assert = require('assert');

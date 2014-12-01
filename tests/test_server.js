@@ -4,7 +4,6 @@
 var assert = require('assert');
 
 var Main = require('../index');
-var Stdout = require('../backends/stdout');
 
 var old = {
   addMessage: Main.prototype.addMessage,
@@ -16,8 +15,8 @@ function send(msg) {
   var message = new Buffer(msg);
 
   var client = dgram.createSocket('udp4');
-  client.send(message, 0, message.length, 8898, '127.0.0.1', function(err, bytes) {
-    if (err) throw err;
+  client.send(message, 0, message.length, 8898, '127.0.0.1', function(err) {
+    if (err) { throw err; }
     client.close();
   });
 }
@@ -71,7 +70,6 @@ describe('server', function() {
         before(function(done) {
           var test = this;
 
-          var expected = { name: 'pippo', value: 3, type: 'time', sample: undefined };
           this.main.addMessage = function(message) {
             test.message = message;
             done();
@@ -141,7 +139,7 @@ describe('server', function() {
       before(function(done) {
         var test = this;
         test.n = 0;
-        this.main.addMessage = function(message) {
+        this.main.addMessage = function() {
           test.n++;
 
           done();
@@ -160,7 +158,7 @@ describe('server', function() {
         var test = this;
         test.n = 0;
 
-        this.main.addMessage = function (message) {
+        this.main.addMessage = function() {
           test.n++;
 
           done();
@@ -321,18 +319,17 @@ describe('server', function() {
     });
 
     it('should call each backends', function(done) {
-      var test = this;
       var n = 0;
 
-      this.main.backends.stdout1.send = function(data, flushTime, callback) {
+      this.main.backends.stdout1.send = function() {
         n++;
         if (n === 3) { done(); }
       };
-      this.main.backends.stdout2.send = function(data, flushTime, callback) {
+      this.main.backends.stdout2.send = function() {
         n++;
         if (n === 3) { done(); }
       };
-      this.main.backends.stdout3.send = function(data, flushTime, callback) {
+      this.main.backends.stdout3.send = function() {
         n++;
         if (n === 3) { done(); }
       };

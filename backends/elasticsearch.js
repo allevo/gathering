@@ -68,9 +68,6 @@ ElasticSearch.prototype.bulk = function(index, type, body, callback) {
 ElasticSearch.prototype.send = function(data, flushTime, callback) {
   var self = this;
 
-  var countCommands = [];
-  var timeCommands = [];
-
   var hasCount = self.config.backends[self.name].countOptions &&  data.count && Object.keys(data.count).length !== 0;
   var hasTime = self.config.backends[self.name].timeOptions && data.time && Object.keys(data.time).length !== 0;
   var hasOs = self.config.backends[self.name].osOptions && data.os && Object.keys(data.os).length !== 0;

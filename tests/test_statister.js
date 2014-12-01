@@ -1,25 +1,11 @@
-/* jshint mocha: true */
+/* jshint mocha: true, camelcase: false */
 'use strict';
 
-var crypto = require('crypto');
 var os = require('os');
 var assert = require('assert');
 
 var Statister = require('../statister');
 
-
-function _averange(arr) {
-  return arr.reduce(function(prev, current) { return prev + current; }, 0) / arr.length;
-}
-
-function getRandom(n) {
-  var buffer = crypto.randomBytes(n);
-  var elements = [];
-  for (var i=0; i < n; i++) {
-    elements.push({value: buffer[i]});
-  }
-  return elements;
-}
 
 describe('statister', function() {
   describe('getTimeStats', function() {

@@ -1,3 +1,4 @@
+/* jshint camelcase: false */
 'use strict';
 
 var os = require('os');
@@ -10,7 +11,7 @@ function Statister(config) {
   if (osStats === 'all') {
     osStats = ['hostname', 'uptime', 'freemem', 'totalmem', 'loadavg', 'cpus'];
   }
-  this.config.osStats = osStats.reduce(function(o, v, i) {
+  this.config.osStats = osStats.reduce(function(o, v) {
     o[v] = v;
     return o;
   }, {});

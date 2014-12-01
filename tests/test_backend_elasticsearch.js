@@ -1,8 +1,7 @@
-/* jshint mocha: true */
+/* jshint mocha: true, camelcase: false */
 'use strict';
 
 var assert = require('assert');
-var util = require('util');
 var nock = require('nock');
 var ElasticSearch = require('../backends/elasticsearch');
 
@@ -59,7 +58,6 @@ describe('elasticsearch backends', function() {
 
   describe('few', function() {
     before(function(done) {
-      var test = this;
       var flushTime = new Date();
 
       var countBody = '{"create":{}}\n{"sum":2,"count":1,"flushTime":"' + flushTime.toISOString() + '","key":"foo"}\n';
@@ -105,7 +103,6 @@ describe('elasticsearch backends', function() {
 
   describe('multiple', function() {
     before(function(done) {
-      var test = this;
       var flushTime = new Date();
 
       var countExpectedBody = [

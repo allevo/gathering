@@ -87,10 +87,10 @@ Main.prototype.aggregate = function() {
 
   var self = this;
   this.aggregator.aggregate(copy, function(err, aggregated) {
-    if(err) throw err;
+    if(err) { throw err; }
 
     self.makeStatistic(aggregated, function(err, toSend) {
-      if(err) throw err;
+      if(err) { throw err; }
       self.flush(toSend);
     });
 
@@ -98,8 +98,6 @@ Main.prototype.aggregate = function() {
 };
 
 Main.prototype.makeStatistic = function(aggregated, cbk) {
-  var self = this;
-
   aggregated.count = aggregated.count || {};
   aggregated.time = aggregated.time || {};
 
@@ -132,7 +130,7 @@ Main.prototype.flush = function(toSend) {
 
 Main.prototype.readConfig = function(filename, cbk) {
   fs.readFile(filename, function(err, data) {
-    if (err) return cbk(err);
+    if (err) { return cbk(err); }
     cbk(err, JSON.parse(data.toString()));
   });
 };
@@ -146,9 +144,7 @@ var types = {
 var regexpMessage = /^([^:]+):(\d+)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
 Main.prototype.parseMessage = function(message, callback) {
   var matches = message.match(regexpMessage);
-  if (!matches) {
-    return;
-  }
+  if (!matches) { return; }
   
   return callback({
     name: matches[1],
@@ -161,7 +157,7 @@ Main.prototype.parseMessage = function(message, callback) {
 
 module.exports = Main;
 
-if (module == require.main) {
+if (module === require.main) {
   var main = new Main(process.argv[2] || './configuration.json');
   main.start(function() {
     console.log('The daemon is running...');
