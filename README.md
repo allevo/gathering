@@ -4,7 +4,7 @@
 [![NPM](https://nodei.co/npm/gathering-daemon.png)](https://nodei.co/npm/gathering-daemon/)
 
 
-This is a daemon written in nodejs. It accepts UPD package, stores temporary the data, creates statistics and sends them to some backends.
+This is a daemon written in nodejs. It accepts UDP package, stores temporary the data, creates statistics and sends them to some backends.
 
 ## How to send a metric
 The protocol for sending data to this daemon is very simple. The UDP package has the following syntax:
@@ -13,7 +13,7 @@ The protocol for sending data to this daemon is very simple. The UDP package has
 ```
 where `<package name>` is the name of the event, `<number>` is the metric, `<identifier>` is the type of metric. To know which metrics is supported, see Metric types section.
 
-You can send a UPD package specifing with a lot of metric in the same time. To do this, your metrics must be separated with EOL `\n`. For instance:
+You can send a UDP package specifing with a lot of metric in the same time. To do this, your metrics must be separated with EOL `\n`. For instance:
 ```
 packagename:1|c\npackagename2:3.4444|ms
 ```
@@ -26,7 +26,7 @@ There are different kinds of metrics. The most important are the following:
 ### Count metric
 The statistics of this metrics are the following:
  * *sum* is the arithmetic sum of the count.
- * *count* is the number of UPD packages arrives.
+ * *count* is the number of UDP packages arrives.
 
 The identifier of this metric is 'c'.
 
@@ -66,7 +66,7 @@ Gathering is able to track os statistics. Using `osStats` key in your configurat
 ## How it works
 If you are looking for a way to create new backend, this is the correct section.
 
-Before starting to write, you should be sure which is your interface for the UPD package name. For instance, you are monitoring some api performace. So your code is sending some UPD packages to this daemon. The key you are using to identify the current called url should be like the following:
+Before starting to write, you should be sure which is your interface for the UDP package name. For instance, you are monitoring some api performace. So your code is sending some UDP packages to this daemon. The key you are using to identify the current called url should be like the following:
 ```
 POST!/this/is/my/url!userid
 ```
