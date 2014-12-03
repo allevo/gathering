@@ -33,6 +33,16 @@ describe('stdout backend', function() {
           sum: 2,
           count: 1,
         }
+      },
+      time: {
+        foo: {
+          min: 3,
+          max: 4,
+          mean: 3.5,
+        }
+      },
+      set: {
+        users: [ 'foo', 'bar', 'foobar' ]
       }
     };
     stdout.send(test.data, new Date(), done);

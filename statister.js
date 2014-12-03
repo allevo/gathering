@@ -110,4 +110,12 @@ Statister.prototype.getTimeStats = function(data, callback) {
   }, callback.bind(null, null, ret));
 };
 
+Statister.prototype.getSetStats = function(data, callback) {
+  if (!data || !data.length) {
+    return callback(null, null);
+  }
+  var res = data.reduce(function(prev, current) { prev[current.value] = true; return prev; }, {});
+  callback(null, Object.keys(res));
+};
+
 module.exports = Statister;

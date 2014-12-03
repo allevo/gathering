@@ -22,6 +22,41 @@ function send(msg) {
 }
 
 describe('server', function() {
+  describe('isNumber', function() {
+    var main = new Main('./tests/test-configuration.json');
+
+    it('number 3 should be a number', function() {
+      assert.equal(3, main.getValue(3));
+    });
+    it('number 3.4 should be a number', function() {
+      assert.equal(3.4, main.getValue(3.4));
+    });
+    it('number 3e4 should be a number', function() {
+      assert.equal(3e4, main.getValue(3e4));
+    });
+    it('number 0x11 should be a number', function() {
+      assert.equal(0x11, main.getValue(0x11));
+    });
+    it('string "3" should be a number', function() {
+      assert.equal(3, main.getValue('3'));
+    });
+    it('string "3.4" should be a number', function() {
+      assert.equal(3.4, main.getValue('3.4'));
+    });
+    it('string "3e4" should be a number', function() {
+      assert.equal(3e4, main.getValue('3e4'));
+    });
+    it('string "0x11" should be a number', function() {
+      assert.equal(0x11, main.getValue('0x11'));
+    });
+    it('space should not be a number', function() {
+      assert.equal('', main.getValue(''));
+    });
+    it('"pippo" should not be a number', function() {
+      assert.equal('pippo', main.getValue('pippo'));
+    });
+  });
+
   describe('on message', function() {
     before(function(done) {
       var test = this;
@@ -62,7 +97,7 @@ describe('server', function() {
           assert.equal('pippo', this.message.name);
         });
         it('should not be sampled', function() {
-          assert.equal(undefined, this.message.undefined);
+          assert.equal(undefined, this.message.sample);
         });
       });
 
@@ -91,7 +126,36 @@ describe('server', function() {
           assert.equal('pippo', this.message.name);
         });
         it('should not be sampled', function() {
-          assert.equal(undefined, this.message.undefined);
+          assert.equal(undefined, this.message.sample);
+        });
+      });
+
+      describe('set type message', function() {
+        before(function(done) {
+          var test = this;
+
+          this.main.addMessage = function(message) {
+            test.message = message;
+            done();
+          };
+
+          send('userid:myuserid|s');
+        });
+
+        it('should be an object', function() {
+          assert.equal('[object Object]', Object.prototype.toString.call(this.message));
+        });
+        it('should be a time type', function() {
+          assert.equal('set', this.message.type);
+        });
+        it('should have the correct value', function() {
+          assert.equal('myuserid', this.message.value);
+        });
+        it('should have the correct name', function() {
+          assert.equal('userid', this.message.name);
+        });
+        it('should not be sampled', function() {
+          assert.equal(undefined, this.message.sample);
         });
       });
     });
@@ -229,6 +293,7 @@ describe('server', function() {
         test.main.addMessage({type: 'time', value: 1.44, name: 'pippo'});
         test.main.addMessage({type: 'time', value: 4.02, name: 'pippo'});
         test.main.addMessage({type: 'time', value: 7.55, name: 'pluto'});
+        test.main.addMessage({type: 'set', value: 'foo', name: 'users'});
 
         test.main.flush = function(toSend) {
           test.toSend = toSend;
@@ -258,6 +323,11 @@ describe('server', function() {
         describe('os', function() {
           it('should be ok', function() {
             assert.ok(this.toSend.os);
+          });
+        });
+        describe('set', function() {
+          it('should have users', function() {
+            assert.equal(true, 'users' in this.toSend.set);
           });
         });
       });
@@ -294,6 +364,9 @@ describe('server', function() {
         });
         it('should have time', function() {
           assert.equal(true, 'time' in this.toSend);
+        });
+        it('should have set', function() {
+          assert.equal(true, 'set' in this.toSend);
         });
         describe('os', function() {
           it('should be ok', function() {

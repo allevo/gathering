@@ -21,6 +21,7 @@ Main.prototype.cleanStats = function() {
     time: [],
     count: [],
     gauge: [],
+    set: [],
   };
 };
 
@@ -100,11 +101,13 @@ Main.prototype.aggregate = function() {
 Main.prototype.makeStatistic = function(aggregated, cbk) {
   aggregated.count = aggregated.count || {};
   aggregated.time = aggregated.time || {};
+  aggregated.set = aggregated.set || {};
 
   map({
     count: map.bind(null, aggregated.count, this.statister.getCountStats.bind(this.statister)),
     time: map.bind(null, aggregated.time, this.statister.getTimeStats.bind(this.statister)),
     os: this.statister.getOSStats.bind(this.statister),
+    set: map.bind(null, aggregated.set, this.statister.getSetStats.bind(this.statister)),
   }, function(item, next) {
     item(next);
   }, cbk);
@@ -138,17 +141,23 @@ Main.prototype.readConfig = function(filename, cbk) {
 var types = {
   c: 'count',
   ms: 'time',
+  s: 'set',
+};
+
+Main.prototype.getValue = function(str) {
+  if (str === '') { return str; }
+  return Number(str) || str;
 };
 
 // metric name and value cannot contain | character
-var regexpMessage = /^([^:]+):(\d+(?:\.\d+)?)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
+var regexpMessage = /^([^:]+):([^\|]+)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
 Main.prototype.parseMessage = function(message, callback) {
   var matches = message.match(regexpMessage);
   if (!matches) { return; }
   
   return callback({
     name: matches[1],
-    value: parseFloat(matches[2]),
+    value: this.getValue(matches[2]),
     type: types[matches[3]],
     sample: matches[4],
   });

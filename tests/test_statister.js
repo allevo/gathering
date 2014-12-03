@@ -288,4 +288,41 @@ describe('statister', function() {
       }
     });
   });
+
+  describe('getSetStats', function() {
+    before(function(done) {
+      var test = this;
+      var data = [
+        {value: 'pippo'},
+        {value: 'pluto'},
+        {value: 'pippo'},
+        {value: 'paperino'},
+        {value: 'pluto'},
+        {value: 'pluto'},
+        {value: 'pippo'},
+        {value: 'pippo'},
+        {value: 'paperone'},
+        {value: 'pippo'},
+        {value: 'pluto'},
+        {value: 'pluto'},
+      ];
+      var statister = new Statister({});
+      statister.getSetStats(data, function(err, stats) {
+        test.err = err;
+        test.stats = stats;
+
+        done();
+      });
+    });
+
+    it('err should be null', function() {
+      assert.ifError(this.err);
+    });
+    it('length shoud be 4', function() {
+      assert.equal(4, this.stats.length);
+    });
+    it('length shoud be the right array', function() {
+      assert.deepEqual(['pippo', 'pluto', 'paperino', 'paperone'], this.stats);
+    });
+  });
 });
