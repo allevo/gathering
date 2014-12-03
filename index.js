@@ -141,14 +141,14 @@ var types = {
 };
 
 // metric name and value cannot contain | character
-var regexpMessage = /^([^:]+):(\d+)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
+var regexpMessage = /^([^:]+):(\d+(?:\.\d+)?)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
 Main.prototype.parseMessage = function(message, callback) {
   var matches = message.match(regexpMessage);
   if (!matches) { return; }
   
   return callback({
     name: matches[1],
-    value: parseInt(matches[2]),
+    value: parseFloat(matches[2]),
     type: types[matches[3]],
     sample: matches[4],
   });

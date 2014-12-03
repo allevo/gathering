@@ -75,7 +75,7 @@ describe('server', function() {
             done();
           };
 
-          send('pippo:3|ms');
+          send('pippo:3.77|ms');
         });
 
         it('should be an object', function() {
@@ -85,7 +85,7 @@ describe('server', function() {
           assert.equal('time', this.message.type);
         });
         it('should have the correct value', function() {
-          assert.equal(3, this.message.value);
+          assert.equal(3.77, this.message.value);
         });
         it('should have the correct name', function() {
           assert.equal('pippo', this.message.name);
