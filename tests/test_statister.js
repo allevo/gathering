@@ -325,4 +325,62 @@ describe('statister', function() {
       assert.deepEqual(['pippo', 'pluto', 'paperino', 'paperone'], this.stats);
     });
   });
+
+  describe('getGaugeStats', function() {
+    describe('must choose last value', function() {
+      before(function(done) {
+        var test = this;
+        var data = [
+          {value: '23'},
+          {value: '22'},
+          {value: '27'},
+          {value: '23'},
+          {value: '23'},
+          {value: '24'},
+        ];
+        var statister = new Statister({});
+        statister.getGaugeStats(data, function(err, stats) {
+          test.err = err;
+          test.stats = stats;
+
+          done();
+        });
+      });
+
+      it('err should be null', function() {
+        assert.ifError(this.err);
+      });
+      it('stats', function() {
+        assert.equal(24, this.stats);
+      });
+    });
+
+    describe('with delta', function() {
+      before(function(done) {
+        var test = this;
+        var data = [
+          {value: '23'},
+          {value: '22'},
+          {value: '+27'},
+          {value: '+23'},
+          {value: '-23'},
+          {value: '+24'},
+        ];
+        var statister = new Statister({});
+        statister.getGaugeStats(data, function(err, stats) {
+          test.err = err;
+          test.stats = stats;
+
+          done();
+        });
+      });
+
+      it('err should be null', function() {
+        assert.ifError(this.err);
+      });
+      it('stats', function() {
+        assert.equal(73, this.stats);
+      });
+    });
+  });
 });

@@ -102,12 +102,14 @@ Main.prototype.makeStatistic = function(aggregated, cbk) {
   aggregated.count = aggregated.count || {};
   aggregated.time = aggregated.time || {};
   aggregated.set = aggregated.set || {};
+  aggregated.gauge = aggregated.gauge || {};
 
   map({
     count: map.bind(null, aggregated.count, this.statister.getCountStats.bind(this.statister)),
     time: map.bind(null, aggregated.time, this.statister.getTimeStats.bind(this.statister)),
     os: this.statister.getOSStats.bind(this.statister),
     set: map.bind(null, aggregated.set, this.statister.getSetStats.bind(this.statister)),
+    gauge: map.bind(null, aggregated.gauge, this.statister.getGaugeStats.bind(this.statister)),
   }, function(item, next) {
     item(next);
   }, cbk);
@@ -142,6 +144,7 @@ var types = {
   c: 'count',
   ms: 'time',
   s: 'set',
+  g: 'gauge',
 };
 
 Main.prototype.getValue = function(str) {
@@ -154,10 +157,21 @@ var regexpMessage = /^([^:]+):([^\|]+)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
 Main.prototype.parseMessage = function(message, callback) {
   var matches = message.match(regexpMessage);
   if (!matches) { return; }
+
+  var value = this.getValue(matches[2]);
+  if ((matches[3] === 'g') && ((typeof value) !== 'number')) {
+    return;
+  }
+  if ((matches[3] !== 's') && ((typeof value) !== 'number')) {
+    return;
+  }
+  if (matches[3] === 'g') {
+    value = matches[2];
+  } 
   
   return callback({
     name: matches[1],
-    value: this.getValue(matches[2]),
+    value: value,
     type: types[matches[3]],
     sample: matches[4],
   });

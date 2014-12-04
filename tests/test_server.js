@@ -158,6 +158,36 @@ describe('server', function() {
           assert.equal(undefined, this.message.sample);
         });
       });
+
+      describe('gauge type message', function() {
+        before(function(done) {
+          var test = this;
+
+          this.main.addMessage = function(message) {
+            test.message = message;
+            done();
+          };
+
+          send('userid:34|g');
+        });
+
+        it('should be an object', function() {
+          assert.equal('[object Object]', Object.prototype.toString.call(this.message));
+        });
+        it('should be a time type', function() {
+          assert.equal('gauge', this.message.type);
+        });
+        it('should have the correct value', function() {
+          assert.equal('string', typeof this.message.value);
+          assert.equal('34', this.message.value);
+        });
+        it('should have the correct name', function() {
+          assert.equal('userid', this.message.name);
+        });
+        it('should not be sampled', function() {
+          assert.equal(undefined, this.message.sample);
+        });
+      });
     });
 
     describe('a multiple line package is parsed as', function() {
@@ -294,6 +324,8 @@ describe('server', function() {
         test.main.addMessage({type: 'time', value: 4.02, name: 'pippo'});
         test.main.addMessage({type: 'time', value: 7.55, name: 'pluto'});
         test.main.addMessage({type: 'set', value: 'foo', name: 'users'});
+        test.main.addMessage({type: 'gauge', value: '22', name: 'gas'});
+        test.main.addMessage({type: 'gauge', value: '+1', name: 'gas'});
 
         test.main.flush = function(toSend) {
           test.toSend = toSend;
@@ -328,6 +360,11 @@ describe('server', function() {
         describe('set', function() {
           it('should have users', function() {
             assert.equal(true, 'users' in this.toSend.set);
+          });
+        });
+        describe('gauge', function() {
+          it('should have gas', function() {
+            assert.equal(true, 'gas' in this.toSend.gauge);
           });
         });
       });

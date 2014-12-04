@@ -118,4 +118,21 @@ Statister.prototype.getSetStats = function(data, callback) {
   callback(null, Object.keys(res));
 };
 
+Statister.prototype.getGaugeStats = function(data, callback) {
+  var tot = 0;
+  var convertedNumber, firstChar;
+  for(var i = data.length - 1; i >= 0; i--) {
+    convertedNumber = Number(data[i].value);
+    if (isNaN(convertedNumber)) {
+      return callback(new Error('Invalid stats for gauge: ' + data[i]));
+    }
+    tot += convertedNumber;
+    firstChar = data[i].value.slice(0, 1);
+    if (firstChar !== '+' && firstChar !== '-') {
+      break;
+    }
+  }
+  callback(null, tot);
+};
+
 module.exports = Statister;
