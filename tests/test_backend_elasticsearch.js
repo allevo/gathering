@@ -25,6 +25,10 @@ describe('elasticsearch backends', function() {
         osOptions: {
           _index: 'stats',
           _type: 'os'
+        },
+        setOptions: {
+          _index: 'stats',
+          _type: 'set'
         }
       }
     }
@@ -63,16 +67,21 @@ describe('elasticsearch backends', function() {
       var countBody = '{"create":{}}\n{"sum":2,"count":1,"flushTime":"' + flushTime.toISOString() + '","key":"foo"}\n';
       var timeBody = '{"create":{}}\n{"max":1,"min":1,"mean":1.5,"flushTime":"' + flushTime.toISOString() + '","key":"bar"}\n';
       var osBody = '{"create":{}}\n{"uptime":1234,"loadavg_1":1,"loadavg_5":15,"loadavg_15":2,"flushTime":"' + flushTime.toISOString() + '"}\n';
+      var setBody = '{"create":{}}\n{"flushTime":"' + flushTime.toISOString() + '","values":["foo","bar","foobar"],"key":"users"}\n';
       
       this.scope = nock('http://localhost:9200')
         .post('/stats/count/_bulk', countBody)
         .reply(200, {})
         .post('/stats/time/_bulk', timeBody)
         .reply(200, {})
+        .post('/stats/set/_bulk', setBody)
+        .reply(200, {})
         .post('/stats/os/_bulk', osBody)
         .reply(200, {});
+        
 
       var data = {
+        
         count: {
           foo: {
             sum: 2,
@@ -91,6 +100,9 @@ describe('elasticsearch backends', function() {
           loadavg_1: 1,
           loadavg_5: 15,
           loadavg_15: 2,
+        },
+        set: {
+          users: ['foo', 'bar', 'foobar']
         }
       };
       backend.send(data, flushTime, done);
@@ -121,11 +133,19 @@ describe('elasticsearch backends', function() {
         JSON.stringify({create:{}}),
         JSON.stringify({max: 1, min: 1, mean: 1.5, flushTime: flushTime.toISOString(), key: 'foobar'}),
       ].join('\n') + '\n';
+      var setExpectedBody = [
+        JSON.stringify({create:{}}),
+        JSON.stringify({flushTime: flushTime.toISOString(), values: ['pippo', 'pluto'], key: 'bar'}),
+        JSON.stringify({create:{}}),
+        JSON.stringify({flushTime: flushTime.toISOString(), values: ['paperino', 'paperone'], key: 'foo'}),
+      ].join('\n') + '\n';
 
       this.scope = nock('http://localhost:9200')
         .post('/stats/count/_bulk', countExpectedBody)
         .reply(200, {})
         .post('/stats/time/_bulk', timeExpectedBody)
+        .reply(200, {})
+        .post('/stats/set/_bulk', setExpectedBody)
         .reply(200, {});
 
       var data = {
@@ -159,6 +179,10 @@ describe('elasticsearch backends', function() {
             min: 1,
             mean: 1.5,
           }
+        },
+        set: {
+          bar: ['pippo', 'pluto'],
+          foo: ['paperino', 'paperone'],
         }
       };
       backend.send(data, flushTime, done);

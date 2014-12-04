@@ -59,9 +59,8 @@ ElasticSearch.prototype.bulk = function(index, type, body, callback) {
   request.on('error', callback);
   for(var i in body) {
     request.write('{"create":{}}\n');
-    request.write(JSON.stringify(body[i]));
+    request.write(JSON.stringify(body[i]) + '\n');
   }
-  request.write('\n');
   request.end();
 };
 
@@ -71,6 +70,7 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
   var hasCount = self.config.backends[self.name].countOptions &&  data.count && Object.keys(data.count).length !== 0;
   var hasTime = self.config.backends[self.name].timeOptions && data.time && Object.keys(data.time).length !== 0;
   var hasOs = self.config.backends[self.name].osOptions && data.os && Object.keys(data.os).length !== 0;
+  var hasSet = self.config.backends[self.name].setOptions && data.set && Object.keys(data.set).length !== 0;
 
   var tasks = {};
   if (hasCount) {
@@ -83,6 +83,14 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
     tasks.time = async.map.bind(null, data.time, function(item, next) {
       item.flushTime = flushTime;
       next(null, item);
+    });
+  }
+  if (hasSet) {
+    tasks.set = async.map.bind(null, data.set, function(item, next) {
+      next(null, {
+        flushTime: flushTime,
+        values: item
+      });
     });
   }
 
@@ -116,6 +124,15 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
       data.os.flushTime = flushTime;
       options = self.config.backends[self.name].osOptions;
       innerTasks.push(self.bulk.bind(self, options._index, options._type, [data.os]));
+    }
+    if (hasSet) {
+      s = [];
+      for (k in res.set) {
+        res.set[k].key = k;
+        s.push(res.set[k]);
+      }
+      options = self.config.backends[self.name].setOptions;
+      innerTasks.push(self.bulk.bind(self, options._index, options._type, s));
     }
     
     async.parallel(innerTasks, callback);
