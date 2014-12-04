@@ -39,6 +39,10 @@ Graphite.prototype.send = function(data, flushTime, callback) {
     }
   }
 
+  for(key in data.gauge) {
+    toSend.push(this.basePath + '.gauge.' + key + ' ' + data.gauge[key] + ' ' + flushTime.getTime());
+  }
+
   var client = new net.Socket();
   client.connect(this.port, this.host, client.end.bind(client, toSend.join('\n')));
   client.on('close', function(hasError) {

@@ -47,7 +47,11 @@ describe('graphite backends', function() {
         },
         set: {
           foobar: ['pippo', 'paperino', 'pluto']
-        }
+        },
+        gauge: {
+          foobar: 11,
+          barfoo: 22,
+        },
       };
       var test = this;
 
@@ -79,8 +83,8 @@ describe('graphite backends', function() {
       before(function() {
         this.splitted = this.data.split('\n');
       });
-      it('has 9 elements', function() {
-        assert.equal(10, this.splitted.length);
+      it('has 12 elements', function() {
+        assert.equal(12, this.splitted.length);
       });
       it('has all elements that starts with basePath', function() {
         for(var i in this.splitted) {
@@ -116,6 +120,12 @@ describe('graphite backends', function() {
       });
       it('tenth elements', function() {
         assert.equal(0, this.splitted[9].indexOf('basePath.set.foobar.length 3 '));
+      });
+      it('eleventh elements', function() {
+        assert.equal(0, this.splitted[10].indexOf('basePath.gauge.foobar 11 '));
+      });
+      it('twelfth elements', function() {
+        assert.equal(0, this.splitted[11].indexOf('basePath.gauge.barfoo 22 '));
       });
     });
   });
