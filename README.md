@@ -19,6 +19,8 @@ You can send a UDP package specifing with a lot of metric in the same time. To d
 packagename:1|c\npackagename2:3.4444|ms
 ```
 
+All characters are admitted for package name except EOL `\n`, the pipe `|` and the colon `:`. You can use all UTF8 characters.
+
 
 ## Metric types
 There are different kinds of metrics. The most important are the following:
@@ -53,15 +55,15 @@ For each precentile described in you configuration (see Configuration section be
 **Warning: please don't ask a lot of percentiles. This might have a performace impact**
 
 ### Set metric
-This metric is a list of unique elements. For instance, you can use this to store a unique user login. This type hasn't statistics. So its value depends on which backend you need. Graphite will store the length of the set only. ElasticSearch will store all values.
+This metric is a list of unique elements. For instance, you can use this to store a unique user login. This type hasn't statistics. So its value depends on which backend you need. Graphite stores the length of the set only. ElasticSearch stores all values.
 
 The identifier of this metric is 's'.
 
 ### Gauge metric
 This metrics is a number that can be change over time. There're two way to do this.
- * reset the value sent a package with a non signed value (`22`, `33`)
- * sum a delta sent a package with a signed value (`+22`, `-33`)
-On flushing, the statistics calculated is the result of those rules.
+ * reset the value sending a package with a non signed value (`22`, `33`)
+ * sum a delta sending a package with a signed value (`+22`, `-33`)
+On flushing, the calculated statistic is the result of those rules.
 
 The identifier of this metric is 'g'.
 
