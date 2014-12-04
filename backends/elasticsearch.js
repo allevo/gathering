@@ -71,6 +71,7 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
   var hasTime = self.config.backends[self.name].timeOptions && data.time && Object.keys(data.time).length !== 0;
   var hasOs = self.config.backends[self.name].osOptions && data.os && Object.keys(data.os).length !== 0;
   var hasSet = self.config.backends[self.name].setOptions && data.set && Object.keys(data.set).length !== 0;
+  var hasGauge = self.config.backends[self.name].gaugeOptions && data.gauge && Object.keys(data.gauge).length !== 0;
 
   var tasks = {};
   if (hasCount) {
@@ -133,6 +134,11 @@ ElasticSearch.prototype.send = function(data, flushTime, callback) {
       }
       options = self.config.backends[self.name].setOptions;
       innerTasks.push(self.bulk.bind(self, options._index, options._type, s));
+    }
+    if (hasGauge) {
+      data.gauge.flushTime = flushTime;
+      options = self.config.backends[self.name].gaugeOptions;
+      innerTasks.push(self.bulk.bind(self, options._index, options._type, [data.gauge]));
     }
     
     async.parallel(innerTasks, callback);
