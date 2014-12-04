@@ -6,6 +6,7 @@
 
 This is a daemon written in nodejs. It accepts UDP package, stores temporary the data, creates statistics and sends them to some backends.
 
+
 ## How to send a metric
 The protocol for sending data to this daemon is very simple. The UDP package has the following syntax:
 ```
@@ -18,10 +19,13 @@ You can send a UDP package specifing with a lot of metric in the same time. To d
 packagename:1|c\npackagename2:3.4444|ms
 ```
 
+
 ## Metric types
 There are different kinds of metrics. The most important are the following:
  * *count* to count how many events are fired
  * *time* to track the ellapsed time of a process
+ * *set* to track a list of unique values
+ * *gauge* to track a value edited by delta
 
 ### Count metric
 The statistics of this metrics are the following:
@@ -48,6 +52,20 @@ For each precentile described in you configuration (see Configuration section be
 
 **Warning: please don't ask a lot of percentiles. This might have a performace impact**
 
+### Set metric
+This metric is a list of unique elements. For instance, you can use this to store a unique user login. This type hasn't statistics. So its value depends on which backend you need. Graphite will store the length of the set only. ElasticSearch will store all values.
+
+The identifier of this metric is 's'.
+
+### Gauge metric
+This metrics is a number that can be change over time. There're two way to do this.
+ * reset the value sent a package with a non signed value (`22`, `33`)
+ * sum a delta sent a package with a signed value (`+22`, `-33`)
+On flushing, the statistics calculated is the result of those rules.
+
+The identifier of this metric is 'g'.
+
+
 ## Configuration
 Your configuration describes which backends will be load. For each backend, it's possible to specify a different configuration avoiding name collisions.
 
@@ -62,6 +80,7 @@ Valueting the `percentiles` key of your configuration, the daemon will calculate
 
 ### OS Stats
 Gathering is able to track os statistics. Using `osStats` key in your configuration, this daemon calculates all stats and send them to each backend under `os` key. The `osStats` key is valued to `"all"` or an array that contains all statistics you need. There's possibile to find all elements in `statister.js` file.
+
 
 ## How it works
 If you are looking for a way to create new backend, this is the correct section.
@@ -99,15 +118,23 @@ It's important you implement this menthod as async as possible to perform better
 
 ## TODO
  * Aggregator is changable from configuration.
- * Add gauge
+ * ~~Add gauge~~
  * Choose which stats is calculated
  * ~~Implement Graphite backend~~
  * ~~Add os stats~~
  * ~~Implement ElasticSeach backend~~
  * Add debug flag
+ * Completely StatsD compatible
+
 
 ## Why don't use statsd
-Before starting this project, I have tried to use StatsD project but finding a lot of problems. StatsD is a great project but is born to send the stats to Graphite. Other backends like ElasticSeach have some problems with naming or UTF8 support. The StatsD code is very ugly and complicated. I'm trying to rewrite it and this project born. The first idea is "The simple is better". So using simple patterns and simple tests I hope I write this project clearly.
+Before starting this project, I have tried to use StatsD project but finding a lot of problems.
+
+StatsD is a great project but is born to send the stats to Graphite. Other backends like ElasticSeach have some problems with naming or UTF8 support.
+
+The StatsD code is very tricky. I'm trying to rewrite it and this project born.
+
+The first idea is "The simple is better". So using simple patterns and simple tests I hope I write this project clearly.
 
 ## Would you mind to contribute?
 All contributors are accepted. Each ideas are accepted and discussed in the correct way. All pull request are welcome.
