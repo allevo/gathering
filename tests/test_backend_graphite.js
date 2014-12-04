@@ -16,7 +16,7 @@ describe('graphite backends', function() {
           host: 'graphitehost.com',
           port: 666
         },
-        basePath: 'foo.bar'
+        basePath: 'basePath'
       }
     }
   });
@@ -44,6 +44,9 @@ describe('graphite backends', function() {
           loadavg_1: 1,
           loadavg_5: 2,
           loadavg_15: 1,
+        },
+        set: {
+          foobar: ['pippo', 'paperino', 'pluto']
         }
       };
       var test = this;
@@ -77,39 +80,42 @@ describe('graphite backends', function() {
         this.splitted = this.data.split('\n');
       });
       it('has 9 elements', function() {
-        assert.equal(9, this.splitted.length);
+        assert.equal(10, this.splitted.length);
       });
       it('has all elements that starts with basePath', function() {
         for(var i in this.splitted) {
-          assert.equal(0, this.splitted[i].indexOf('foo.bar'));
+          assert.equal(0, this.splitted[i].indexOf('basePath'));
         }
       });
       it('first elements', function() {
-        assert.equal(0, this.splitted[0].indexOf('foo.bar.time.max 1 '));
+        assert.equal(0, this.splitted[0].indexOf('basePath.time.bar.max 1 '));
       });
       it('second elements', function() {
-        assert.equal(0, this.splitted[1].indexOf('foo.bar.time.min 1 '));
+        assert.equal(0, this.splitted[1].indexOf('basePath.time.bar.min 1 '));
       });
       it('third elements', function() {
-        assert.equal(0, this.splitted[2].indexOf('foo.bar.time.mean 1.5 '));
+        assert.equal(0, this.splitted[2].indexOf('basePath.time.bar.mean 1.5 '));
       });
       it('fourth elements', function() {
-        assert.equal(0, this.splitted[3].indexOf('foo.bar.count.sum 2 '));
+        assert.equal(0, this.splitted[3].indexOf('basePath.count.foo.sum 2 '));
       });
       it('fifth elements', function() {
-        assert.equal(0, this.splitted[4].indexOf('foo.bar.count.count 1 '));
+        assert.equal(0, this.splitted[4].indexOf('basePath.count.foo.count 1 '));
       });
       it('sixth elements', function() {
-        assert.equal(0, this.splitted[5].indexOf('foo.bar.os.uptime 111 '));
+        assert.equal(0, this.splitted[5].indexOf('basePath.os.uptime 111 '));
       });
       it('seventh elements', function() {
-        assert.equal(0, this.splitted[6].indexOf('foo.bar.os.loadavg_1 1 '));
+        assert.equal(0, this.splitted[6].indexOf('basePath.os.loadavg_1 1 '));
       });
       it('eighth elements', function() {
-        assert.equal(0, this.splitted[7].indexOf('foo.bar.os.loadavg_5 2 '));
+        assert.equal(0, this.splitted[7].indexOf('basePath.os.loadavg_5 2 '));
       });
       it('nineth elements', function() {
-        assert.equal(0, this.splitted[8].indexOf('foo.bar.os.loadavg_15 1 '));
+        assert.equal(0, this.splitted[8].indexOf('basePath.os.loadavg_15 1 '));
+      });
+      it('tenth elements', function() {
+        assert.equal(0, this.splitted[9].indexOf('basePath.set.foobar.length 3 '));
       });
     });
   });

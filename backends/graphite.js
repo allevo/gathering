@@ -19,18 +19,24 @@ Graphite.prototype.send = function(data, flushTime, callback) {
   var key, metric;
   for(key in data.time) {
     for(metric in data.time[key]) {
-      toSend.push(this.basePath + '.time.' + metric + ' ' + data.time[key][metric] + ' ' + flushTime.getTime());
+      toSend.push(this.basePath + '.time.' + key + '.' + metric + ' ' + data.time[key][metric] + ' ' + flushTime.getTime());
     }
   }
 
   for(key in data.count) {
     for(metric in data.count[key]) {
-      toSend.push(this.basePath + '.count.' + metric + ' ' + data.count[key][metric] + ' ' + flushTime.getTime());
+      toSend.push(this.basePath + '.count.' + key + '.' + metric + ' ' + data.count[key][metric] + ' ' + flushTime.getTime());
     }
   }
 
   for(metric in data.os) {
     toSend.push(this.basePath + '.os.' + metric + ' ' + data.os[metric] + ' ' + flushTime.getTime());
+  }
+
+  for(key in data.set) {
+    if (data.set[key].length) {
+      toSend.push(this.basePath + '.set.' + key + '.length ' + data.set[key].length + ' ' + flushTime.getTime());
+    }
   }
 
   var client = new net.Socket();
