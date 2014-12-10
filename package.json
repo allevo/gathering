@@ -6,6 +6,7 @@
   "scripts": {
     "test": "./node_modules/.bin/jshint *.js backends/*.js tests/*.js && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --recursive -R tap tests"
   },
+  "homepage": "https://github.com/allevo/gathering",
   "repository": "https://github.com/allevo/gathering.git",
   "author": "allevo",
   "license": "BSD",
@@ -15,5 +16,13 @@
     "mocha": "~2.0.1",
     "nock": "^0.51.0"
   },
+  "keywords": [
+    "statistic",
+    "UDP",
+    "metric",
+    "graphite",
+    "elasticsearch",
+    "aggregator"
+  ],
   "dependencies": { }
 }
