@@ -37,7 +37,7 @@ The statistics of this metrics are the following:
 The identifier of this metric is 'c'.
 
 ### Time metric
-This metric represents an ellapsed time for a process (i.e. http api call). For this reason, this metric collects a lot of type of statistics:
+This metric represents an ellapsed time for a process (i.e. http api call, db request). For this reason, this metric collects a lot of type of statistics:
  * *count* is the number of metrics the daemon received
  * *sum* is the arithmetic sum
  * *min* is the minium value
@@ -55,15 +55,16 @@ For each precentile described in you configuration (see Configuration section be
 **Warning: please don't ask a lot of percentiles. This might have a performace impact**
 
 ### Set metric
-This metric is a list of unique elements. For instance, you can use this to store a unique user login. This type hasn't statistics. So its value depends on which backend you need. Graphite stores the length of the set only. ElasticSearch stores all values.
+This metric is a list of unique elements. For instance, you can use this to store a unique user login. This type hasn't statistics.
+The value stored on backends depends on which backend you need: Graphite stores the length of the set only; ElasticSearch stores all values.
 
 The identifier of this metric is 's'.
 
 ### Gauge metric
 This metrics is a number that can be change over time. There're two way to do this.
- * reset the value sending a package with a non signed value (`22`, `33`)
- * sum a delta sending a package with a signed value (`+22`, `-33`)
-On flushing, the calculated statistic is the result of those rules.
+ * *reset* the value sending a package with a non signed value (`22`, `33`)
+ * *sum* a delta sending a package with a signed value (`+22`, `-33`)
+On flushing, the calculated statistic is the result of those rules. After flushing the gauge is removed and is not passed to backends on next time if a new message didn't arrive.
 
 The identifier of this metric is 'g'.
 
@@ -71,17 +72,126 @@ The identifier of this metric is 'g'.
 ## Configuration
 Your configuration describes which backends will be load. For each backend, it's possible to specify a different configuration avoiding name collisions.
 
-When this daemon would send the statistics, it send them on each backend. Therefore, custom backend can be create easily.
-
 Your configuration must have `flushInterval`, `port` and `host` key set. This is the minimal configuration.
 
-But... if you are using this, you should send the statistics to somewhere. So let's try to explain how to configure this daemon.
+Your configuration should be like this:
+```
+{
+  "port": 8898,
+  "host": "127.0.0.1",
+  "flushInterval": 100,
+  "backends": {
+    "stdout1": {
+      "path": "./backends/stdout",
+      "date_function": "toLocaleDateString"
+    },
+    "stdout2": {
+      "path": "./backends/stdout",
+      "date_function": "toLocaleDateString"
+    },
+    "stdout3": {
+      "path": "./backends/stdout",
+      "date_function": "toLocaleDateString"
+    }
+  }
+}
+```
+
+Each backend has its configuration. See the Backends configuration section.
 
 ### Percentile configuration
-Valueting the `percentiles` key of your configuration, the daemon will calculate the correct *min*, *max* and *mean* for each percentiles you specify.
+Valueting the `percentiles` key of your configuration, Gathering will calculate the correct *min*, *max* and *mean* for each percentiles you specify.
 
 ### OS Stats
-Gathering is able to track os statistics. Using `osStats` key in your configuration, this daemon calculates all stats and send them to each backend under `os` key. The `osStats` key is valued to `"all"` or an array that contains all statistics you need. There's possibile to find all elements in `statister.js` file.
+Gathering is able to track os statistics. Using `osStats` key in your configuration, Gathering calculates all stats and send them to each backend under `os` key. The `osStats` key is valued to `"all"` or an array that contains all statistics you need. There's possibile to find all elements in `statister.js` file.
+
+
+## Backends configuration
+All backend configurations must have a `path` key. Its value must be a valid path. Relative paths are possible and are resolved with `index.js` file as root.
+
+Multiple backends are admitted and multiple instance of the same backends too.
+```
+{
+  ...
+  "backends": {
+    "stdout1": {
+      "path": "./backends/stdout",
+      "date_function": "toLocaleDateString"
+    },
+    "stdout2": {
+      "path": "./backends/stdout",
+      "date_function": "toISOString"
+    },
+    "stdout3": {
+      "path": "./backends/stdout",
+      "date_function": "toLocaleDateString"
+    }
+  }
+}
+```
+In this example, Gathering daemon creates three stdout backends with three different configurations.
+
+### Stdout
+This backend prints to output all data.
+
+The only one parameter this backend accept is `date_function`.
+Its value must be a name of a function callable on a Javascript Date object. Referring to [this page](http://www.w3schools.com/jsref/jsref_obj_date.asp)
+```
+"stdout": {
+  "path": "./backends/stdout",
+  "date_function": "toLocaleDateString"
+}
+```
+
+### Graphite
+This backend sends the statistics to a graphite server.
+
+Its configuration must have `server` and `basePath` keys. `server` value is an hash with `port` and `host` keys. `basePath` value must be a string used as prefix in graphite key.
+```
+"graphite": {
+  "path": "./backends/graphite",
+  "server": {
+    "host": "graphitehost.com",
+    "port": 666
+  },
+  "basePath": "basePath"
+}
+```
+
+### ElasticSearch
+This backend sends the statistics to an elasticsearch server.
+
+Its configuration must have  `server` key. `server` value is an hash with `port` and `host` keys. For each statistics you would send to elasticsearch, the configuration should be contained an hash with `_index` and `_type` keys to speficy where document will be created.
+```
+"elasticsearch": {
+  "path": "./backends/elasticsearch",
+  "server": {
+    "host": "localhost",
+    "port": 9200
+  },
+  "timeOptions": {
+    "_index": "stats",
+    "_type": "time"
+  },
+  "countOptions": {
+    "_index": "stats",
+    "_type": "count"
+  },
+  "osOptions": {
+    "_index": "stats",
+    "_type": "os"
+  },
+  "setOptions": {
+    "_index": "stats",
+    "_type": "set"
+  },
+  "gaugeOptions": {
+    "_index": "stats",
+    "_type": "gauge"
+  }
+}
+```
+If the configuration omits some options, the associated statistics are not send.
 
 
 ## How it works
@@ -101,27 +211,30 @@ After this, the statistics will be created and each backends will be called.
 ### The backend
 Each backend should be "derived" from Sender class. This is because the interface remains stable on possible future changes.
 
-When you create a new backend, there're three method to override:
+When you create a new backend, there're three methods to override:
  * *constructor* is used to store some configuration or setup something.
  * *send* is used to send the statistics to your backend.
- * *close* is used when the daemon is closing to tear down something.
+ * *close* is used when the daemon is closing and you want tear down something.
 
 Probably you are interested in send method. This is the most important method and is used to send the statistics to your backend. For example to ElasticSeach or Graphite.
 
-An example is provided to Stdout backend that print all statistics to output.
+The simpliest example is Stdout backend that prints all statistics to output. You should start from it.
 
 The backend send menthod has three paramenters:
- * *data* is the aggregated data already analized by this daemon.
- * *flushTime* is the date when the daemon requests to each backend to send the stats.
+ * *data* is the aggregated data already analized by Gathering.
+ * *flushTime* is the date when Gathering requests to each backend to send the stats.
  * *callback* is a function that should be called when you are sure that your backend stores the stats.
 
-It's important you implement this menthod as async as possible to perform better when some messages arrive when your backend is flushing. You can pass an error to the callback. It'll be printed to stdout.
+It's important you implement this menthod as async as possible to perform better when some messages arrive when your backend flushes.
+
+You can pass an error to the callback. It'll be printed to stdout.
 
 
 ## TODO
  * Aggregator is changable from configuration.
  * ~~Add gauge~~
  * Choose which stats is calculated
+ * Add TCP admin interface
  * ~~Implement Graphite backend~~
  * ~~Add os stats~~
  * ~~Implement ElasticSeach backend~~
@@ -129,10 +242,10 @@ It's important you implement this menthod as async as possible to perform better
  * Completely StatsD compatible
 
 
-## Why don't use statsd
-Before starting this project, I have tried to use StatsD project but finding a lot of problems.
+## Why use Gathering daemon?
+Before starting this project, I have tried to use StatsD project but I have found a lot of problems.
 
-StatsD is a great project but is born to send the stats to Graphite. Other backends like ElasticSeach have some problems with naming or UTF8 support.
+StatsD is a great project but is born to send the stats to Graphite. Other backends like ElasticSeach have some problems specially with naming or UTF8 support or not Graphite-like package name.
 
 The StatsD code is very tricky. I'm trying to rewrite it and this project born.
 
