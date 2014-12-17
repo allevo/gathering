@@ -1,6 +1,6 @@
 # README
 
-[![Build Status](https://travis-ci.org/allevo/gathering.svg?branch=master)](https://travis-ci.org/allevo/gathering)
+[![Build Status](https://travis-ci.org/allevo/gathering.svg)](https://travis-ci.org/allevo/gathering)
 [![NPM](https://nodei.co/npm/gathering-daemon.png)](https://nodei.co/npm/gathering-daemon/)
 
 
