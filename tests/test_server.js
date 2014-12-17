@@ -96,8 +96,30 @@ describe('server', function() {
         it('should have the correct name', function() {
           assert.equal('pippo', this.message.name);
         });
-        it('should not be sampled', function() {
-          assert.equal(undefined, this.message.sample);
+      });
+
+      describe('sampled count type message', function() {
+        before(function(done) {
+          var test = this;
+
+          this.main.addMessage = function(message) {
+            test.message = message;
+            done();
+          };
+
+          send('pippo:3|c|@0.1');
+        });
+        it('should be an object', function() {
+          assert.equal('[object Object]', Object.prototype.toString.call(this.message));
+        });
+        it('should be a count type', function() {
+          assert.equal('count', this.message.type);
+        });
+        it('should have the correct value', function() {
+          assert.equal(30, this.message.value);
+        });
+        it('should have the correct name', function() {
+          assert.equal('pippo', this.message.name);
         });
       });
 
@@ -125,9 +147,6 @@ describe('server', function() {
         it('should have the correct name', function() {
           assert.equal('pippo', this.message.name);
         });
-        it('should not be sampled', function() {
-          assert.equal(undefined, this.message.sample);
-        });
       });
 
       describe('set type message', function() {
@@ -153,9 +172,6 @@ describe('server', function() {
         });
         it('should have the correct name', function() {
           assert.equal('userid', this.message.name);
-        });
-        it('should not be sampled', function() {
-          assert.equal(undefined, this.message.sample);
         });
       });
 
@@ -183,9 +199,6 @@ describe('server', function() {
         });
         it('should have the correct name', function() {
           assert.equal('userid', this.message.name);
-        });
-        it('should not be sampled', function() {
-          assert.equal(undefined, this.message.sample);
         });
       });
     });

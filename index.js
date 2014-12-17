@@ -153,7 +153,7 @@ Main.prototype.getValue = function(str) {
 };
 
 // metric name and value cannot contain | character
-var regexpMessage = /^([^:]+):([^\|]+)\|(\w{1,2})(?:@(\d?\.\d+))?$/;
+var regexpMessage = /^([^:]+):([^\|]+)\|(\w{1,2})(?:\|@(\d?\.\d+))?$/;
 Main.prototype.parseMessage = function(message, callback) {
   var matches = message.match(regexpMessage);
   if (!matches) { return; }
@@ -168,12 +168,15 @@ Main.prototype.parseMessage = function(message, callback) {
   if (matches[3] === 'g') {
     value = matches[2];
   } 
+
+  if (matches[3] === 'c' && matches[4]) {
+    value /= Number(matches[4]);
+  }
   
   return callback({
     name: matches[1],
     value: value,
     type: types[matches[3]],
-    sample: matches[4],
   });
 };
 
